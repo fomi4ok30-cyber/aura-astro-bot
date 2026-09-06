@@ -271,7 +271,7 @@ async def call_gemini_safe(prompt: str, max_tokens: int = 1500) -> str:
         "- *Reflection:* What matters most to your long-term growth right now?"
     )
 
-async def generate_blueprint_text(name: str, bp: dict) -> str:
+async async def generate_blueprint_text(name: str, bp: dict) -> str:
     prompt = f"""
 Client: {name}
 Placements:
@@ -279,13 +279,16 @@ Placements:
 - Moon: {bp['moon']}
 - Ascendant: {bp['ascendant']}
 
-Write a comprehensive, psychologically deep natal profile (around 250-320 words):
-- **Core Architecture**: How the conscious will and vision of their Sun interact with the emotional instinct of their Moon.
-- **The Outer Persona**: How their Ascendant shapes their presence, intuition, and first impression.
-- **Distinct Superpower**: 1 signature psychological strength and strategic advantage.
-Ensure all sections are completely finished without ending mid-sentence.
+Write an insightful, complete psychological natal profile (around 200-250 words total).
+Structure strictly into three concise sections:
+- **Core Architecture**: How conscious identity (Sun) and emotional subconscious (Moon) collaborate (2-3 sentences).
+- **The Outer Persona**: How their Ascendant shapes their presence and outer impression (2-3 sentences).
+- **Distinct Superpower**: Name their signature psychological strength and explain it in 2 complete sentences.
+
+CRITICAL: You must finish every sentence and conclude the Distinct Superpower section completely.
 """
-    return await call_gemini_safe(prompt, max_tokens=1500)
+    return await call_gemini_safe(prompt, max_tokens=2000)
+
 
 async def generate_transit_text(name: str, transits: list) -> str:
     t_str = "; ".join(transits) if transits else "Harmonious planetary flow."
