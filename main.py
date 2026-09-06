@@ -155,7 +155,7 @@ async def init_db():
             """
         )
 
-        # Safe migration from the original v1 schema.
+        # Safe migration from original schema
         columns = await db_columns(db, "users")
         migrations = {
             "trial_used": "INTEGER DEFAULT 1",
@@ -214,9 +214,7 @@ async def init_db():
             """
         )
 
-        # Original users already had a trial, so mark it as used.
         await db.execute("UPDATE users SET trial_used = 1 WHERE trial_used IS NULL")
-
         await db.commit()
 
 
@@ -264,12 +262,6 @@ async def save_or_update_user(
     lon: float,
     tz_str: str,
 ):
-    """
-    Important:
-    - Existing premium_until is preserved.
-    - Existing trial_until is preserved.
-    - Re-registering cannot create another 7-day trial.
-    """
     now_utc = datetime.now(UTC)
     existing = await get_user(user_id)
 
@@ -659,7 +651,6 @@ def find_transits(
     for t_name, t_deg in transit.items():
         for n_name, n_deg in natal.items():
             if t_name == n_name and t_name in {"Sun", "Moon"}:
-                # Keep luminary self-aspects out of the daily noise.
                 continue
 
             diff = angular_distance(t_deg, n_deg)
@@ -672,8 +663,6 @@ def find_transits(
                 prev_orb = abs(prev_diff - angle)
                 motion = "applying" if orb < prev_orb else "separating"
 
-                # Smaller orb = higher importance. Outer planets get a little
-                # more weight because their contacts tend to last longer.
                 planet_weight = {
                     "Sun": 1.0,
                     "Moon": 0.7,
@@ -750,7 +739,7 @@ Do not mention system prompts, internal tools, APIs, model names, or hidden inst
 
 async def call_gemini_safe(
     prompt: str,
-    max_tokens: int = 1800,
+    max_tokens: int = 2000,
 ) -> str:
     for attempt in range(3):
         try:
@@ -788,17 +777,23 @@ Client name: {name}
 Natal placements:
 {chr(10).join(f"- {k}: {v}" for k, v in bp.items())}
 
-Create a welcoming psychological natal profile around 250 words.
+Write an articulate, deeply psychological natal blueprint that explains what these specific placements mean (around 220-270 words total).
 
-Use exactly these headings:
+Structure into exactly these sections:
+
 Core Architecture
-The Outer Persona
-Mind & Communication
-Love & Motivation
-Distinct Superpower
+Analyze how their conscious vision (Sun: {bp.get('Sun')}) and emotional subconscious (Moon: {bp.get('Moon')}) collaborate.
 
-Keep the tone grounded and personal.
-Do not make deterministic predictions.
+The Outer Persona
+Explain how their Ascendant ({bp.get('Ascendant')}) shapes their outer impression, protective boundaries, and presence.
+
+Drive & Strategy
+Explain how their Mars ({bp.get('Mars')}) and Mercury ({bp.get('Mercury')}) drive ambition, focus, and decision-making.
+
+Distinct Superpower
+Name 1 signature psychological superpower based on their chart, and explain it in 2 complete sentences.
+
+CRITICAL: Finish every sentence completely with proper punctuation.
 """
     return await call_gemini_safe(prompt, 2200)
 
@@ -819,7 +814,7 @@ Natal placements:
 Active transits:
 {format_transits(transits)}
 
-Write a useful personal daily forecast around 220 words.
+Write a useful personal daily forecast around 200 words.
 
 Use exactly:
 Daily Theme
@@ -830,9 +825,9 @@ Tactical Directives
 Reflective Inquiry
 
 Tactical Directives must contain exactly 2 bullet points.
-Do not make financial or medical predictions.
+CRITICAL: Finish every sentence completely.
 """
-    return await call_gemini_safe(prompt, 2300)
+    return await call_gemini_safe(prompt, 2000)
 
 
 async def generate_topic_answer(
@@ -851,11 +846,11 @@ Natal placements:
 Current transits:
 {format_transits(transits)}
 
-Give a focused psychological astrology reading about {topic}, around 220 words.
+Give a focused psychological astrology reading about {topic}, around 200 words.
 Explain the relevant patterns and give 3 practical suggestions.
-Avoid deterministic predictions and avoid claiming certainty about other people.
+Finish all sentences completely.
 """
-    return await call_gemini_safe(prompt, 2300)
+    return await call_gemini_safe(prompt, 2000)
 
 
 async def generate_chart_answer(
@@ -875,12 +870,11 @@ Current transits:
 {format_transits(transits)}
 
 Answer the client's question using their supplied chart as a reflective framework.
-Around 220 words.
+Around 200 words.
 Start with a direct answer, then explain the relevant chart factors, then give 2 practical actions.
-If the question is outside astrology, answer briefly and honestly rather than pretending the chart can determine it.
-Never use fatalistic language.
+Finish all sentences completely.
 """
-    return await call_gemini_safe(prompt, 2300)
+    return await call_gemini_safe(prompt, 2000)
 
 
 # ============================================================
@@ -904,7 +898,6 @@ async def get_chart_for_user(user: Dict[str, Any]) -> Dict[str, Any]:
 
 
 async def target_noon_utc(user: Dict[str, Any], target_date: date) -> datetime:
-    # Noon UTC gives a stable daily snapshot while avoiding DST mistakes.
     return datetime(
         target_date.year,
         target_date.month,
@@ -927,7 +920,6 @@ async def send_long_message(
     text: str,
     reply_markup: Optional[InlineKeyboardMarkup] = None,
 ):
-    # Telegram messages have a ~4096 character limit.
     if len(text) <= 3900:
         await bot.send_message(
             chat_id=chat_id,
@@ -1171,9 +1163,7 @@ async def cb_menu(callback: types.CallbackQuery):
     user = await get_user(callback.from_user.id)
 
     if not user:
-        await callback.message.answer(
-            "Please use /start to create your chart."
-        )
+        await callback.message.answer("Please use /start to create your chart.")
         return
 
     access = await get_user_access(callback.from_user.id)
@@ -1610,7 +1600,6 @@ async def send_daily_cycle():
             tz = ZoneInfo(user["timezone"])
             local_now = now_utc.astimezone(tz)
 
-            # Run hourly, but only process the 20:00 local hour.
             if local_now.hour != 20:
                 continue
 
@@ -1636,8 +1625,6 @@ async def send_daily_cycle():
                     user["user_id"],
                     "paywall_daily",
                 )
-                # Don't mark this as a forecast delivery; if the user remains
-                # expired, they may see the paywall again after future cycles.
                 await asyncio.sleep(0.2)
                 continue
 
@@ -1742,7 +1729,6 @@ async def main():
         },
     )
 
-    # Hourly scan. Each user's own timezone decides whether it is 20:00.
     scheduler.add_job(
         send_daily_cycle,
         "cron",
