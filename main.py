@@ -96,9 +96,9 @@ TEXTS = {
         "paywall_msg": "🔒 Бесплатный доступ завершен.\n\nОформите подписку, чтобы продолжить получать прогнозы и задавать вопросы карте.",
         "ask_prompt": "💬 СПРОСИТЬ КАРТУ\n\nЗадайте один вопрос о себе, работе, отношениях или выборе:\n\n_Например: В чем корень моих сомнений при смене работы?_",
         "analyzing": "🧠 Анализирую карту и транзиты планет...",
-        "plan_1m_btn": "⭐ 1 месяц — 500 Stars",
-        "plan_6m_btn": "⚡ 6 месяцев — 2000 Stars",
-        "plan_1y_btn": "👑 1 год — 3500 Stars",
+        "plan_1m_btn": "⭐ 1 месяц — 250 Stars",
+        "plan_6m_btn": "⚡ 6 месяцев — 600 Stars",
+        "plan_1y_btn": "👑 1 год — 1800 Stars",
     },
     "en": {
         "welcome_back": "✨ Welcome back, {name}!\n\nStatus: {status}\n\nWhat would you like to explore?",
@@ -144,9 +144,9 @@ TEXTS = {
         "paywall_msg": "🔒 Your free access has ended.\n\nChoose a plan to continue receiving forecasts and asking your chart.",
         "ask_prompt": "💬 ASK MY CHART\n\nAsk one question about yourself, relationships, work, or decisions:\n\n_Example: Why do I keep overthinking conversations?_",
         "analyzing": "🧠 Looking at your chart and current transits...",
-        "plan_1m_btn": "⭐ 1 Month — 500 Stars",
-        "plan_6m_btn": "⚡ 6 Months — 2000 Stars",
-        "plan_1y_btn": "👑 1 Year — 3500 Stars",
+        "plan_1m_btn": "⭐ 1 Month — 250 Stars",
+        "plan_6m_btn": "⚡ 6 Months — 600 Stars",
+        "plan_1y_btn": "👑 1 Year — 1800 Stars",
     }
 }
 
@@ -159,9 +159,9 @@ def t(key: str, lang: str = "en", **kwargs) -> str:
 # PLANS & KEYBOARDS
 # ============================================================
 PRICING_PLANS = {
-    "plan_1m": {"title": "🌟 1 Month Access", "description": "30 days of forecasts & Ask My Chart.", "stars": 500, "days": 30},
-    "plan_6m": {"title": "⚡ 6 Months Access", "description": "180 days of forecasts & transit tracking.", "stars": 2000, "days": 180},
-    "plan_1y": {"title": "👑 1 Year Access", "description": "365 days of complete astrology coaching.", "stars": 3500, "days": 365},
+    "plan_1m": {"title": "🌟 1 Month Access", "description": "30 days of forecasts & Ask My Chart.", "stars": 250, "days": 30},
+    "plan_6m": {"title": "⚡ 6 Months Access", "description": "180 days of forecasts & transit tracking.", "stars": 600, "days": 180},
+    "plan_1y": {"title": "👑 1 Year Access", "description": "365 days of complete astrology coaching.", "stars": 1800, "days": 365},
 }
 
 def pricing_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
