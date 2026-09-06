@@ -34,7 +34,7 @@ BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 PORT = int(os.getenv("PORT", 8080))
 DB_PATH = os.getenv("DB_PATH", "aura_astro.db")
-MODEL_NAME = "gemini-2.5-flash"
+MODEL_NAME = "gemini-3.6-flash"
 
 if not BOT_TOKEN or not GEMINI_KEY:
     print("[CRITICAL] Please provide TELEGRAM_BOT_TOKEN and GEMINI_API_KEY in Environment Variables!")
