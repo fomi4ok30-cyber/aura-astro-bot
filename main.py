@@ -86,7 +86,7 @@ def get_pricing_keyboard() -> InlineKeyboardMarkup:
     ])
 
 # =====================================================================
-# 1. СЛОЙ БАЗЫ ДАННЫХ (AIOSQLITE С ПОДДЕРЖКОЙ ДАТЫ ОКОНЧАНИЯ ПОДПИСКИ)
+# 1. СЛОЙ БАЗЫ ДАННЫХ
 # =====================================================================
 async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
@@ -148,14 +148,12 @@ async def get_user_access(user_id: int) -> Dict[str, Any]:
             if not row:
                 return {"has_access": False, "status": "not_found", "days_left": 0}
 
-            # 1. Проверяем оплаченный Premium
             if row["premium_until"]:
                 prem_dt = datetime.fromisoformat(row["premium_until"])
                 if prem_dt > now_utc:
                     days_left = (prem_dt - now_utc).days + 1
                     return {"has_access": True, "status": "premium", "days_left": days_left}
 
-            # 2. Проверяем 7-дневный Trial
             trial_dt = datetime.fromisoformat(row["trial_until"])
             if trial_dt > now_utc:
                 days_left = (trial_dt - now_utc).days + 1
@@ -243,10 +241,11 @@ SYSTEM_PROMPT = """
 You are a distinguished psychological astrologer and mindfulness mentor writing for an educated English-speaking audience.
 Tone: Articulate, grounding, modern, empathetic. Strictly NO fortune-telling, clichés, or fatalism.
 Focus on cognitive clarity, emotional dynamics, interpersonal relations, and concrete actions.
-Output exclusively in clean Markdown.
+Always finish your sentences and deliver complete, coherent paragraphs. Output exclusively in clean Markdown.
 """
 
-async def call_gemini_safe(prompt: str, max_tokens: int = 350) -> str:
+async def call_gemini_safe(prompt: str, max_tokens: int = 1500) -> str:
+    """Генерация с защитой от сбоев и достаточным лимитом токенов."""
     for attempt in range(3):
         try:
             response = await asyncio.to_thread(
@@ -280,12 +279,13 @@ Placements:
 - Moon: {bp['moon']}
 - Ascendant: {bp['ascendant']}
 
-Write a concise psychological blueprint (300-400 words):
-- **Core Architecture**: How conscious identity (Sun) and emotional subconscious (Moon) interact.
-- **The Outer Lens**: How their Ascendant shapes outer impressions.
-- **Distinct Superpower**: 1 signature cognitive/emotional strength.
+Write a comprehensive, psychologically deep natal profile (around 250-320 words):
+- **Core Architecture**: How the conscious will and vision of their Sun interact with the emotional instinct of their Moon.
+- **The Outer Persona**: How their Ascendant shapes their presence, intuition, and first impression.
+- **Distinct Superpower**: 1 signature psychological strength and strategic advantage.
+Ensure all sections are completely finished without ending mid-sentence.
 """
-    return await call_gemini_safe(prompt, max_tokens=1200)
+    return await call_gemini_safe(prompt, max_tokens=1500)
 
 async def generate_transit_text(name: str, transits: list) -> str:
     t_str = "; ".join(transits) if transits else "Harmonious planetary flow."
@@ -293,13 +293,14 @@ async def generate_transit_text(name: str, transits: list) -> str:
 Client: {name}
 Active Transits for Tomorrow: {t_str}
 
-Provide an empowering daily forecast (150-190 words):
+Provide an empowering daily forecast (around 180-220 words):
 - **Daily Theme**: 1-sentence evocative headline.
-- **Psychological Climate**: Active emotional themes and mental focus.
-- **Tactical Directives**: Exactly 2 clear action items for productivity and communication.
-- **Reflective Inquiry**: 1 mindful prompt for reflection.
+- **Psychological Climate**: Active emotional dynamics and mental clarity.
+- **Tactical Directives**: Exactly 2 actionable steps for productivity and mindful communication.
+- **Reflective Inquiry**: 1 thoughtful mindfulness prompt.
+Ensure all sections are completely finished without ending mid-sentence.
 """
-    return await call_gemini_safe(prompt, max_tokens=400)
+    return await call_gemini_safe(prompt, max_tokens=1500)
 
 # =====================================================================
 # 4. ШЕДУЛЕР РАССЫЛКИ (20:00 ПО МЕСТНОМУ ВРЕМЕНИ)
@@ -320,7 +321,7 @@ async def send_daily_cycle():
             if not access["has_access"]:
                 paywall_msg = (
                     f"🔒 *Your Free Access has concluded, {user['name']}.*\n\n"
-                    "Active transits are shaping your chart tomorrow. Choose a plan below "
+                    "Active transits continue shaping your chart tomorrow. Choose a plan below "
                     "to continue receiving daily alignments, psychological themes, and practical action plans."
                 )
                 await bot.send_message(
@@ -489,9 +490,9 @@ async def process_buy_plan(callback: types.CallbackQuery):
         title=plan["title"],
         description=plan["description"],
         payload=f"{plan_key}:{callback.from_user.id}",
-        currency="XTR",  # Валюта Telegram Stars
+        currency="XTR",
         prices=prices,
-        provider_token="" # Для Telegram Stars остается пустой строкой
+        provider_token=""
     )
 
 @dp.pre_checkout_query()
