@@ -5,10 +5,7 @@ from datetime import datetime, date, time, timedelta, timezone
 from zoneinfo import ZoneInfo
 from typing import Dict, List, Any
 
-# Веб-сервер для Uptime-пингов на Render
 from aiohttp import web
-
-# Telegram фреймворк
 from aiogram import Bot, Dispatcher, types, F
 from aiogram.filters import CommandStart, Command
 from aiogram.fsm.context import FSMContext
@@ -21,11 +18,8 @@ from aiogram.types import (
     LabeledPrice, 
     PreCheckoutQuery
 )
-
-# Планировщик фоновых задач
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-# Астрономия, базы данных и LLM
 import aiosqlite
 import swisseph as swe
 from geopy.geocoders import Nominatim
@@ -40,13 +34,12 @@ BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 PORT = int(os.getenv("PORT", 8080))
 DB_PATH = os.getenv("DB_PATH", "aura_astro.db")
-MODEL_NAME = "gemini-3.6-flash"
+MODEL_NAME = "gemini-2.5-flash"
 
 if not BOT_TOKEN or not GEMINI_KEY:
     print("[CRITICAL] Please provide TELEGRAM_BOT_TOKEN and GEMINI_API_KEY in Environment Variables!")
     sys.exit(1)
 
-# Клиенты
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 geolocator = Nominatim(user_agent="aura_astro_engine_prod", timeout=7)
@@ -55,25 +48,24 @@ ai_client = genai.Client(api_key=GEMINI_KEY)
 
 # =====================================================================
 # ТАРИФНАЯ СЕТКА (TELEGRAM STARS)
-# 1 USD ~ 50 Stars
 # =====================================================================
 PRICING_PLANS = {
     "plan_1m": {
         "title": "🌟 1 Month Access",
         "description": "30 days of full daily transits & psychological guidance.",
-        "stars": 500,       # $10
+        "stars": 500,
         "days": 30
     },
     "plan_6m": {
         "title": "⚡ 6 Months Access (Save $20)",
         "description": "180 days of transit forecasts & cosmic tracking.",
-        "stars": 2000,      # $40 ($6.6/mo)
+        "stars": 2000,
         "days": 180
     },
     "plan_1y": {
         "title": "👑 1 Year Access (Best Value - Save $50)",
         "description": "365 days of full astrological coaching & updates.",
-        "stars": 3500,      # $70 ($5.8/mo)
+        "stars": 3500,
         "days": 365
     }
 }
@@ -235,17 +227,16 @@ def get_active_transits(birth_utc: datetime, target_utc: datetime) -> List[str]:
     return [item["desc"] for item in found[:3]]
 
 # =====================================================================
-# 3. ГЕНЕРАТИВНЫЙ МОДУЛЬ (GEMINI 3.6 FLASH)
+# 3. ГЕНЕРАТИВНЫЙ МОДУЛЬ (GEMINI)
 # =====================================================================
 SYSTEM_PROMPT = """
 You are a distinguished psychological astrologer and mindfulness mentor writing for an educated English-speaking audience.
 Tone: Articulate, grounding, modern, empathetic. Strictly NO fortune-telling, clichés, or fatalism.
 Focus on cognitive clarity, emotional dynamics, interpersonal relations, and concrete actions.
-Always finish your sentences and deliver complete, coherent paragraphs. Output exclusively in clean Markdown.
+Always finish your sentences completely. Output exclusively in clean Markdown.
 """
 
 async def call_gemini_safe(prompt: str, max_tokens: int = 1500) -> str:
-    """Генерация с защитой от сбоев и достаточным лимитом токенов."""
     for attempt in range(3):
         try:
             response = await asyncio.to_thread(
@@ -264,14 +255,14 @@ async def call_gemini_safe(prompt: str, max_tokens: int = 1500) -> str:
             await asyncio.sleep(2.0 * (attempt + 1))
             
     return (
-        "**Daily Planetary Focus**\n\n"
-        "Today highlights introspection, emotional resilience, and thoughtful communication. "
-        "Pause and evaluate before making critical decisions.\n\n"
-        "- *Action:* Focus on high-priority objectives and clear boundaries.\n"
-        "- *Reflection:* What matters most to your long-term growth right now?"
+        "### Daily Focus\n\n"
+        "Today highlights emotional resilience and mental clarity. "
+        "Pause and evaluate before making critical commitments.\n\n"
+        "- **Action:** Focus on your single highest-priority task.\n"
+        "- **Reflection:** What boundary protects your peace of mind today?"
     )
 
-async async def generate_blueprint_text(name: str, bp: dict) -> str:
+async def generate_blueprint_text(name: str, bp: dict) -> str:
     prompt = f"""
 Client: {name}
 Placements:
@@ -279,16 +270,15 @@ Placements:
 - Moon: {bp['moon']}
 - Ascendant: {bp['ascendant']}
 
-Write an insightful, complete psychological natal profile (around 200-250 words total).
-Structure strictly into three concise sections:
+Write a concise psychological natal profile (around 200 words total).
+Structure strictly into three sections:
 - **Core Architecture**: How conscious identity (Sun) and emotional subconscious (Moon) collaborate (2-3 sentences).
-- **The Outer Persona**: How their Ascendant shapes their presence and outer impression (2-3 sentences).
-- **Distinct Superpower**: Name their signature psychological strength and explain it in 2 complete sentences.
+- **The Outer Persona**: How their Ascendant shapes their presence and outer impression (2 sentences).
+- **Distinct Superpower**: Name their signature psychological strength and explain it in 2 sentences.
 
-CRITICAL: You must finish every sentence and conclude the Distinct Superpower section completely.
+CRITICAL: Complete every thought and finish the Distinct Superpower section fully.
 """
-    return await call_gemini_safe(prompt, max_tokens=2000)
-
+    return await call_gemini_safe(prompt, max_tokens=1500)
 
 async def generate_transit_text(name: str, transits: list) -> str:
     t_str = "; ".join(transits) if transits else "Harmonious planetary flow."
@@ -296,14 +286,15 @@ async def generate_transit_text(name: str, transits: list) -> str:
 Client: {name}
 Active Transits for Tomorrow: {t_str}
 
-Provide an empowering daily forecast (around 180-220 words):
+Provide an empowering daily forecast (around 160 words):
 - **Daily Theme**: 1-sentence evocative headline.
-- **Psychological Climate**: Active emotional dynamics and mental clarity.
-- **Tactical Directives**: Exactly 2 actionable steps for productivity and mindful communication.
-- **Reflective Inquiry**: 1 thoughtful mindfulness prompt.
-Ensure all sections are completely finished without ending mid-sentence.
+- **Psychological Climate**: Active emotional dynamics and mental clarity (2-3 sentences).
+- **Tactical Directives**: Exactly 2 bullet points for mindful action.
+- **Reflective Inquiry**: 1 thoughtful mindfulness question.
+
+CRITICAL: Complete every section fully.
 """
-    return await call_gemini_safe(prompt, max_tokens=1500)
+    return await call_gemini_safe(prompt, max_tokens=1200)
 
 # =====================================================================
 # 4. ШЕДУЛЕР РАССЫЛКИ (20:00 ПО МЕСТНОМУ ВРЕМЕНИ)
