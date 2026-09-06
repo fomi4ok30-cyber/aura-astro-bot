@@ -34,7 +34,7 @@ BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 PORT = int(os.getenv("PORT", 8080))
 DB_PATH = os.getenv("DB_PATH", "aura_astro.db")
-MODEL_NAME = "gemini-3.6-flash"
+MODEL_NAME = "gemini-2.5-flash"
 
 if not BOT_TOKEN or not GEMINI_KEY:
     print("[CRITICAL] Please provide TELEGRAM_BOT_TOKEN and GEMINI_API_KEY in Environment Variables!")
@@ -233,10 +233,10 @@ SYSTEM_PROMPT = """
 You are a distinguished psychological astrologer and mindfulness mentor writing for an educated English-speaking audience.
 Tone: Articulate, grounding, modern, empathetic. Strictly NO fortune-telling, clichés, or fatalism.
 Focus on cognitive clarity, emotional dynamics, interpersonal relations, and concrete actions.
-Always finish your sentences completely. Output exclusively in clean Markdown.
+Always finish every single sentence you begin. Output in clean text or Markdown.
 """
 
-async def call_gemini_safe(prompt: str, max_tokens: int = 1500) -> str:
+async def call_gemini_safe(prompt: str, max_tokens: int = 2048) -> str:
     for attempt in range(3):
         try:
             response = await asyncio.to_thread(
@@ -255,11 +255,12 @@ async def call_gemini_safe(prompt: str, max_tokens: int = 1500) -> str:
             await asyncio.sleep(2.0 * (attempt + 1))
             
     return (
-        "### Daily Focus\n\n"
-        "Today highlights emotional resilience and mental clarity. "
-        "Pause and evaluate before making critical commitments.\n\n"
-        "- **Action:** Focus on your single highest-priority task.\n"
-        "- **Reflection:** What boundary protects your peace of mind today?"
+        "Core Architecture\n"
+        "Your planetary alignments highlight thoughtful decision-making, inner resilience, and clear communication.\n\n"
+        "The Outer Persona\n"
+        "You project a balanced and perceptive presence, naturally attuned to the atmosphere around you.\n\n"
+        "Distinct Superpower\n"
+        "Objective Empathy: The rare ability to remain grounded and clear-headed while maintaining genuine emotional care."
     )
 
 async def generate_blueprint_text(name: str, bp: dict) -> str:
@@ -270,15 +271,22 @@ Placements:
 - Moon: {bp['moon']}
 - Ascendant: {bp['ascendant']}
 
-Write a concise psychological natal profile (around 200 words total).
+Write a concise psychological natal summary (around 180 words total).
 Structure strictly into three sections:
-- **Core Architecture**: How conscious identity (Sun) and emotional subconscious (Moon) collaborate (2-3 sentences).
-- **The Outer Persona**: How their Ascendant shapes their presence and outer impression (2 sentences).
-- **Distinct Superpower**: Name their signature psychological strength and explain it in 2 sentences.
 
-CRITICAL: Complete every thought and finish the Distinct Superpower section fully.
+Core Architecture
+Explain in 2-3 concise sentences how their conscious identity (Sun) and emotional subconscious (Moon) interact.
+
+The Outer Persona
+Explain in 2 sentences how their Ascendant shapes their presence and first impression.
+
+Distinct Superpower
+Give a 2-word title for their signature strength, followed by exactly 1-2 complete sentences explaining it.
+
+CRITICAL REQUIREMENT:
+You must fully finish every single sentence with a period. Do NOT stop mid-sentence.
 """
-    return await call_gemini_safe(prompt, max_tokens=1500)
+    return await call_gemini_safe(prompt, max_tokens=2048)
 
 async def generate_transit_text(name: str, transits: list) -> str:
     t_str = "; ".join(transits) if transits else "Harmonious planetary flow."
@@ -286,15 +294,15 @@ async def generate_transit_text(name: str, transits: list) -> str:
 Client: {name}
 Active Transits for Tomorrow: {t_str}
 
-Provide an empowering daily forecast (around 160 words):
-- **Daily Theme**: 1-sentence evocative headline.
-- **Psychological Climate**: Active emotional dynamics and mental clarity (2-3 sentences).
-- **Tactical Directives**: Exactly 2 bullet points for mindful action.
+Provide a daily transit alignment (around 150 words):
+- **Daily Theme**: 1 evocative phrase.
+- **Psychological Climate**: 2 concise sentences on mental clarity and emotions.
+- **Tactical Directives**: Exactly 2 actionable bullet points.
 - **Reflective Inquiry**: 1 thoughtful mindfulness question.
 
-CRITICAL: Complete every section fully.
+CRITICAL: Finish every sentence completely.
 """
-    return await call_gemini_safe(prompt, max_tokens=1200)
+    return await call_gemini_safe(prompt, max_tokens=2048)
 
 # =====================================================================
 # 4. ШЕДУЛЕР РАССЫЛКИ (20:00 ПО МЕСТНОМУ ВРЕМЕНИ)
@@ -448,7 +456,7 @@ async def process_city(m: types.Message, state: FSMContext):
         f"Your daily transit forecasts will arrive every evening at **20:00** local time.\n"
         f"Your first forecast arrives tonight!"
     )
-    await m.answer(card, parse_mode="Markdown")
+    await m.answer(card)
     await state.clear()
 
 # =====================================================================
