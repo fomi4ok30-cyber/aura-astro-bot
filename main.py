@@ -280,12 +280,12 @@ Placements:
 - Moon: {bp['moon']}
 - Ascendant: {bp['ascendant']}
 
-Write a concise psychological blueprint (140-180 words):
+Write a concise psychological blueprint (300-400 words):
 - **Core Architecture**: How conscious identity (Sun) and emotional subconscious (Moon) interact.
 - **The Outer Lens**: How their Ascendant shapes outer impressions.
 - **Distinct Superpower**: 1 signature cognitive/emotional strength.
 """
-    return await call_gemini_safe(prompt, max_tokens=350)
+    return await call_gemini_safe(prompt, max_tokens=1200)
 
 async def generate_transit_text(name: str, transits: list) -> str:
     t_str = "; ".join(transits) if transits else "Harmonious planetary flow."
