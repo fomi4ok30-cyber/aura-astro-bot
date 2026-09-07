@@ -45,9 +45,13 @@ if not DATABASE_URL:
     sys.exit(1)
 
 # Официальные стабильные модели Google Gemini API
+
+# ============================================================
+# GEMINI MODELS
+# ============================================================
+
 MODELS_CHAIN = [
-    "gemini-3.6-flash",
-    "gemini-3.1-pro-preview"
+    "gemini-2.5-flash",
 ]
 
 
