@@ -46,10 +46,10 @@ if not DATABASE_URL:
 
 # Официальные стабильные модели Google Gemini API
 MODELS_CHAIN = [
-    "gemini-2.5-flash",
-    "gemini-2.5-pro",
-    "gemini-2.0-flash"
+    "gemini-3.6-flash",
+    "gemini-3.1-pro-preview"
 ]
+
 
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
