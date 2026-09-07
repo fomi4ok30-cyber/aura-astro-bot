@@ -35,8 +35,14 @@ BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_KEY")
 PORT = int(os.getenv("PORT", "8080"))
 DATABASE_URL = os.getenv("DATABASE_URL")
-MODEL_NAME = "gemini-3.6-flash"
-FALLBACK_MODEL_NAME = "gemini-3.5-flash"
+
+# Отказоустойчивая цепочка текстовых моделей
+MODELS_CHAIN = [
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+    "gemini-3.5-flash",
+    "gemini-3.6-flash"
+]
 
 if not BOT_TOKEN or not GEMINI_KEY:
     print("[CRITICAL] TELEGRAM_BOT_TOKEN and GEMINI_API_KEY are required.", flush=True)
@@ -450,7 +456,7 @@ def format_transits(transits: List[Dict[str, Any]]) -> str:
     return "\n".join(f"- {t['transit_planet']} {t['aspect']} natal {t['natal_planet']} (orb {t['orb']}°, {t['motion']})" for t in transits)
 
 # ============================================================
-# GEMINI ENGINE (FAST DIRECT TEXT MODELS)
+# GEMINI ENGINE WITH INSTANT FAILOVER
 # ============================================================
 SYSTEM_PROMPT = """
 You are Aura Astro, an elite psychological astrologer and mindfulness mentor.
@@ -464,27 +470,24 @@ async def call_gemini_safe(prompt: str, lang: str = "en", max_tokens: int = 2000
     lang_rule = f"\nCRITICAL: Respond natively and entirely in {lang_name}. Never switch languages."
     full_prompt = prompt + lang_rule
 
-    models_chain = [MODEL_NAME, FALLBACK_MODEL_NAME]
-
-    for model_candidate in models_chain:
-        for attempt in range(2):
-            try:
-                response = await asyncio.to_thread(
-                    ai_client.models.generate_content,
-                    model=model_candidate,
-                    contents=full_prompt,
-                    config=genai_types.GenerateContentConfig(
-                        system_instruction=SYSTEM_PROMPT,
-                        temperature=0.6,
-                        max_output_tokens=max_tokens,
-                    ),
-                )
-                text = (response.text or "").strip()
-                if text:
-                    return text
-            except Exception as e:
-                print(f"[Gemini Error model={model_candidate} attempt={attempt+1}] {e}", flush=True)
-                await asyncio.sleep(0.3)
+    for model_candidate in MODELS_CHAIN:
+        try:
+            response = await asyncio.to_thread(
+                ai_client.models.generate_content,
+                model=model_candidate,
+                contents=full_prompt,
+                config=genai_types.GenerateContentConfig(
+                    system_instruction=SYSTEM_PROMPT,
+                    temperature=0.6,
+                    max_output_tokens=max_tokens,
+                ),
+            )
+            text = (response.text or "").strip()
+            if text:
+                return text
+        except Exception as e:
+            print(f"[Gemini Failover -> model={model_candidate}] {e}", flush=True)
+            continue
 
     return (
         "Ваша натальная карта — это ориентир для размышлений и осознанного выбора.\n\n"
