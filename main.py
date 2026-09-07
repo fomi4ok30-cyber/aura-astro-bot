@@ -797,6 +797,68 @@ async def process_question(m: types.Message, state: FSMContext):
     await send_long_message(m.chat.id, f"💬 {q}\n\n{ans}", main_menu_keyboard(lang))
     await state.clear()
 
+# ============================================================
+# TOPIC HANDLERS (RELATIONSHIPS, CAREER, MONEY)
+# ============================================================
+@dp.callback_query(F.data.in_({"topic_relationships", "topic_career", "topic_money"}))
+async def cb_topics(cb: types.CallbackQuery):
+    await cb.answer()
+    user = await get_user(cb.from_user.id)
+    if not user:
+        return
+    
+    lang = user.get("language_code", "en")
+    access = await get_user_access(cb.from_user.id)
+    if not access["has_access"]:
+        await cb.message.answer(t("paywall_msg", lang), reply_markup=pricing_keyboard(lang))
+        return
+
+    topic_keys = {
+        "topic_relationships": {
+            "title_ru": "❤️ АСТРОЛОГИЯ ОТНОШЕНИЙ",
+            "title_en": "❤️ RELATIONSHIP BLUEPRINT",
+            "focus": "Venus, Moon, Mars, 7th house dynamic, emotional intimacy, attraction patterns, and conflict resolution",
+        },
+        "topic_career": {
+            "title_ru": "💼 КАРЬЕРА И ПРИЗВАНИЕ",
+            "title_en": "💼 CAREER & VOCATION",
+            "focus": "Midheaven (MC), Saturn, Mars, professional ambition, leadership style, and strategic career moves",
+        },
+        "topic_money": {
+            "title_ru": "💰 ФИНАНСОВЫЙ ПОТЕНЦИАЛ",
+            "title_en": "💰 FINANCIAL BLUEPRINT",
+            "focus": "Jupiter, Venus, 2nd & 8th house motifs, wealth habits, relationship with abundance and financial discipline",
+        }
+    }
+    
+    info = topic_keys[cb.data]
+    status_msg = await cb.message.answer(t("analyzing", lang))
+    
+    b_utc = parse_birth_dt(user)
+    bp = get_natal_blueprint(b_utc, float(user["lat"]), float(user["lon"]))
+    transits = find_transits(b_utc, datetime.now(UTC))
+
+    prompt = f"""
+Client: {user['name']}
+Analysis Domain: {info['focus']}
+Chart Placements: {chr(10).join(f"- {k}: {v}" for k, v in bp.items())}
+Active Transits: {format_transits(transits)}
+
+Write an in-depth psychological and strategic astrology reading focused strictly on this domain (around 220 words).
+Structure strictly into 3 sections:
+1. Core Pattern (Inherent psychological tendencies and subconscious drives in this area)
+2. Current Transit Momentum (How today's planetary transits activate this dynamic)
+3. 2 Tactical Recommendations (Concrete, high-value behavioral adjustments)
+
+Tone: deep, pragmatic, empowering, zero clichés. Complete every sentence.
+"""
+    reading = await call_gemini_safe(prompt, lang, 2000)
+    await status_msg.delete()
+    
+    title = info["title_ru"] if lang.startswith("ru") else info["title_en"]
+    full_text = f"✨ {title}\n\n{reading}"
+    await send_long_message(cb.message.chat.id, full_text, back_menu_keyboard(lang))
+
 @dp.callback_query(F.data == "subscription")
 async def cb_sub(cb: types.CallbackQuery):
     await cb.answer()
@@ -898,8 +960,8 @@ async def start_web_server():
     await site.start()
 
 async def main():
-    await init_db()
     await start_web_server()
+    await init_db()
     scheduler = AsyncIOScheduler(timezone="UTC")
     scheduler.add_job(send_daily_cycle, "cron", minute=0, id="daily_cycle", replace_existing=True)
     scheduler.start()
