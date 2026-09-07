@@ -35,8 +35,8 @@ BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_KEY")
 PORT = int(os.getenv("PORT", "8080"))
 DATABASE_URL = os.getenv("DATABASE_URL")
-MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
-FALLBACK_MODEL_NAME = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-2.0-flash")
+MODEL_NAME = "gemini-3.6-flash"
+FALLBACK_MODEL_NAME = "gemini-3.5-flash"
 
 if not BOT_TOKEN or not GEMINI_KEY:
     print("[CRITICAL] TELEGRAM_BOT_TOKEN and GEMINI_API_KEY are required.", flush=True)
@@ -53,25 +53,6 @@ tf = TimezoneFinder()
 ai_client = genai.Client(api_key=GEMINI_KEY)
 UTC = timezone.utc
 db_pool: Optional[asyncpg.Pool] = None
-
-# Кэш доступных на аккаунте моделей
-AVAILABLE_MODELS: List[str] = []
-
-def init_available_models():
-    global AVAILABLE_MODELS
-    try:
-        models = ai_client.models.list()
-        found = []
-        for m in models:
-            m_name = getattr(m, "name", "")
-            if "generateContent" in getattr(m, "supported_generation_methods", []) or "flash" in m_name:
-                cleaned = m_name.replace("models/", "")
-                found.append(cleaned)
-        if found:
-            AVAILABLE_MODELS = found
-            print(f"[Gemini Info] Detected available models: {AVAILABLE_MODELS}", flush=True)
-    except Exception as e:
-        print(f"[Gemini Info] ListModels check skipped: {e}", flush=True)
 
 # ============================================================
 # LOCALIZATION (I18N)
@@ -469,7 +450,7 @@ def format_transits(transits: List[Dict[str, Any]]) -> str:
     return "\n".join(f"- {t['transit_planet']} {t['aspect']} natal {t['natal_planet']} (orb {t['orb']}°, {t['motion']})" for t in transits)
 
 # ============================================================
-# GEMINI ENGINE WITH FAILOVER
+# GEMINI ENGINE (FAST DIRECT TEXT MODELS)
 # ============================================================
 SYSTEM_PROMPT = """
 You are Aura Astro, an elite psychological astrologer and mindfulness mentor.
@@ -483,14 +464,9 @@ async def call_gemini_safe(prompt: str, lang: str = "en", max_tokens: int = 2000
     lang_rule = f"\nCRITICAL: Respond natively and entirely in {lang_name}. Never switch languages."
     full_prompt = prompt + lang_rule
 
-    default_chain = [MODEL_NAME, FALLBACK_MODEL_NAME, "gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash"]
-    models_chain = AVAILABLE_MODELS if AVAILABLE_MODELS else default_chain
+    models_chain = [MODEL_NAME, FALLBACK_MODEL_NAME]
 
-    # Убираем дубликаты с сохранением порядка
-    seen = set()
-    final_chain = [m for m in models_chain if not (m in seen or seen.add(m))]
-
-    for model_candidate in final_chain:
+    for model_candidate in models_chain:
         for attempt in range(2):
             try:
                 response = await asyncio.to_thread(
@@ -508,7 +484,7 @@ async def call_gemini_safe(prompt: str, lang: str = "en", max_tokens: int = 2000
                     return text
             except Exception as e:
                 print(f"[Gemini Error model={model_candidate} attempt={attempt+1}] {e}", flush=True)
-                await asyncio.sleep(0.5)
+                await asyncio.sleep(0.3)
 
     return (
         "Ваша натальная карта — это ориентир для размышлений и осознанного выбора.\n\n"
@@ -986,7 +962,6 @@ async def start_web_server():
 async def main():
     await start_web_server()
     await init_db()
-    init_available_models()
     scheduler = AsyncIOScheduler(timezone="UTC")
     scheduler.add_job(send_daily_cycle, "cron", minute=0, id="daily_cycle", replace_existing=True)
     scheduler.start()
