@@ -21,7 +21,7 @@ from aiogram.types import (
 )
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-import aiosqlite
+import asyncpg
 import swisseph as swe
 from geopy.geocoders import Nominatim
 from timezonefinder import TimezoneFinder
@@ -34,11 +34,16 @@ from google.genai import types as genai_types
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 PORT = int(os.getenv("PORT", "8080"))
-DB_PATH = os.getenv("DB_PATH", "aura_astro.db")
+DATABASE_URL = os.getenv("DATABASE_URL")
 MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+FALLBACK_MODEL_NAME = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash")
 
 if not BOT_TOKEN or not GEMINI_KEY:
     print("[CRITICAL] TELEGRAM_BOT_TOKEN and GEMINI_API_KEY are required.")
+    sys.exit(1)
+
+if not DATABASE_URL:
+    print("[CRITICAL] DATABASE_URL is required for Neon PostgreSQL.")
     sys.exit(1)
 
 bot = Bot(token=BOT_TOKEN)
@@ -47,6 +52,7 @@ geolocator = Nominatim(user_agent="aura_astro_engine_prod_v2", timeout=7)
 tf = TimezoneFinder()
 ai_client = genai.Client(api_key=GEMINI_KEY)
 UTC = timezone.utc
+db_pool: Optional[asyncpg.Pool] = None
 
 # ============================================================
 # LOCALIZATION (I18N)
@@ -96,9 +102,10 @@ TEXTS = {
         "paywall_msg": "🔒 Бесплатный доступ завершен.\n\nОформите подписку, чтобы продолжить получать прогнозы и задавать вопросы карте.",
         "ask_prompt": "💬 СПРОСИТЬ КАРТУ\n\nЗадайте один вопрос о себе, работе, отношениях или выборе:\n\n_Например: В чем корень моих сомнений при смене работы?_",
         "analyzing": "🧠 Анализирую карту и транзиты планет...",
-        "plan_1m_btn": "⭐ 1 месяц — 250 Stars",
-        "plan_6m_btn": "⚡ 6 месяцев — 600 Stars",
-        "plan_1y_btn": "👑 1 год — 1800 Stars",
+        "plan_1m_btn": "⭐ 1 месяц — 199 Stars",
+        "plan_3m_btn": "✨ 3 месяца — 450 Stars",
+        "plan_6m_btn": "⚡ 6 месяцев — 800 Stars",
+        "plan_1y_btn": "👑 1 год — 1200 Stars",
     },
     "en": {
         "welcome_back": "✨ Welcome back, {name}!\n\nStatus: {status}\n\nWhat would you like to explore?",
@@ -144,9 +151,10 @@ TEXTS = {
         "paywall_msg": "🔒 Your free access has ended.\n\nChoose a plan to continue receiving forecasts and asking your chart.",
         "ask_prompt": "💬 ASK MY CHART\n\nAsk one question about yourself, relationships, work, or decisions:\n\n_Example: Why do I keep overthinking conversations?_",
         "analyzing": "🧠 Looking at your chart and current transits...",
-        "plan_1m_btn": "⭐ 1 Month — 250 Stars",
-        "plan_6m_btn": "⚡ 6 Months — 600 Stars",
-        "plan_1y_btn": "👑 1 Year — 1800 Stars",
+        "plan_1m_btn": "⭐ 1 Month — 199 Stars",
+        "plan_3m_btn": "✨ 3 Months — 450 Stars",
+        "plan_6m_btn": "⚡ 6 Months — 800 Stars",
+        "plan_1y_btn": "👑 1 Year — 1200 Stars",
     }
 }
 
@@ -159,14 +167,16 @@ def t(key: str, lang: str = "en", **kwargs) -> str:
 # PLANS & KEYBOARDS
 # ============================================================
 PRICING_PLANS = {
-    "plan_1m": {"title": "🌟 1 Month Access", "description": "30 days of forecasts & Ask My Chart.", "stars": 250, "days": 30},
-    "plan_6m": {"title": "⚡ 6 Months Access", "description": "180 days of forecasts & transit tracking.", "stars": 600, "days": 180},
-    "plan_1y": {"title": "👑 1 Year Access", "description": "365 days of complete astrology coaching.", "stars": 1800, "days": 365},
+    "plan_1m": {"title": "🌟 1 Month Access", "description": "30 days of forecasts & Ask My Chart.", "stars": 199, "days": 30},
+    "plan_3m": {"title": "✨ 3 Months Access", "description": "90 days of complete astro guidance.", "stars": 450, "days": 90},
+    "plan_6m": {"title": "⚡ 6 Months Access", "description": "180 days of forecasts & transit tracking.", "stars": 800, "days": 180},
+    "plan_1y": {"title": "👑 1 Year Access", "description": "365 days of complete astrology coaching.", "stars": 1200, "days": 365},
 }
 
 def pricing_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text=t("plan_1m_btn", lang), callback_data="buy_plan_1m")],
+        [InlineKeyboardButton(text=t("plan_3m_btn", lang), callback_data="buy_plan_3m")],
         [InlineKeyboardButton(text=t("plan_6m_btn", lang), callback_data="buy_plan_6m")],
         [InlineKeyboardButton(text=t("plan_1y_btn", lang), callback_data="buy_plan_1y")],
         [InlineKeyboardButton(text=t("btn_menu", lang), callback_data="menu")],
@@ -186,113 +196,98 @@ def back_menu_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
     ])
 
 # ============================================================
-# DATABASE
+# DATABASE (Neon PostgreSQL via asyncpg)
 # ============================================================
-async def db_columns(db, table: str) -> set:
-    async with db.execute(f"PRAGMA table_info({table})") as cursor:
-        rows = await cursor.fetchall()
-    return {row[1] for row in rows}
-
 async def init_db():
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("PRAGMA journal_mode=WAL;")
-        await db.execute("PRAGMA foreign_keys=ON;")
-        await db.execute("""
+    global db_pool
+    clean_url = DATABASE_URL
+    if clean_url.startswith("postgres://"):
+        clean_url = clean_url.replace("postgres://", "postgresql://", 1)
+
+    db_pool = await asyncpg.create_pool(clean_url, min_size=1, max_size=5)
+
+    async with db_pool.acquire() as conn:
+        await conn.execute("""
             CREATE TABLE IF NOT EXISTS users (
-                user_id INTEGER PRIMARY KEY,
+                user_id BIGINT PRIMARY KEY,
                 name TEXT NOT NULL,
                 birth_date TEXT NOT NULL,
                 birth_time TEXT NOT NULL,
                 city TEXT NOT NULL,
-                lat REAL NOT NULL,
-                lon REAL NOT NULL,
+                lat DOUBLE PRECISION NOT NULL,
+                lon DOUBLE PRECISION NOT NULL,
                 timezone TEXT NOT NULL,
                 trial_until TEXT NOT NULL,
                 premium_until TEXT,
-                is_active INTEGER DEFAULT 1,
-                created_at TEXT NOT NULL
-            )
+                is_active INT DEFAULT 1,
+                created_at TEXT NOT NULL,
+                trial_used INT DEFAULT 1,
+                last_forecast_date TEXT,
+                language_code TEXT DEFAULT 'en'
+            );
         """)
-        columns = await db_columns(db, "users")
-        migrations = {
-            "trial_used": "INTEGER DEFAULT 1",
-            "last_forecast_date": "TEXT",
-            "language_code": "TEXT DEFAULT 'en'",
-        }
-        for column, definition in migrations.items():
-            if column not in columns:
-                await db.execute(f"ALTER TABLE users ADD COLUMN {column} {definition}")
-
-        await db.execute("""
+        await conn.execute("""
             CREATE TABLE IF NOT EXISTS daily_deliveries (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                user_id INTEGER NOT NULL,
+                id BIGSERIAL PRIMARY KEY,
+                user_id BIGINT NOT NULL,
                 forecast_date TEXT NOT NULL,
                 sent_at TEXT NOT NULL,
                 UNIQUE(user_id, forecast_date)
-            )
+            );
         """)
-        await db.execute("""
+        await conn.execute("""
             CREATE TABLE IF NOT EXISTS payments (
                 telegram_payment_charge_id TEXT PRIMARY KEY,
-                user_id INTEGER NOT NULL,
+                user_id BIGINT NOT NULL,
                 plan_key TEXT NOT NULL,
-                stars INTEGER NOT NULL,
-                days INTEGER NOT NULL,
+                stars INT NOT NULL,
+                days INT NOT NULL,
                 payload TEXT,
                 created_at TEXT NOT NULL
-            )
+            );
         """)
-        await db.execute("""
+        await conn.execute("""
             CREATE TABLE IF NOT EXISTS ai_usage (
-                user_id INTEGER NOT NULL,
+                user_id BIGINT NOT NULL,
                 usage_date TEXT NOT NULL,
-                requests INTEGER NOT NULL DEFAULT 0,
+                requests INT NOT NULL DEFAULT 0,
                 PRIMARY KEY(user_id, usage_date)
-            )
+            );
         """)
-        await db.commit()
 
 async def get_user(user_id: int) -> Optional[Dict[str, Any]]:
-    async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        async with db.execute("SELECT * FROM users WHERE user_id = ?", (user_id,)) as cursor:
-            row = await cursor.fetchone()
-            return dict(row) if row else None
+    async with db_pool.acquire() as conn:
+        row = await conn.fetchrow("SELECT * FROM users WHERE user_id = $1", user_id)
+        return dict(row) if row else None
 
 async def save_or_update_user(user_id: int, name: str, b_date: str, b_time: str, city: str, lat: float, lon: float, tz_str: str, lang_code: str):
     now_utc = datetime.now(UTC)
     existing = await get_user(user_id)
     lang = "ru" if (lang_code or "").startswith("ru") else "en"
 
-    async with aiosqlite.connect(DB_PATH) as db:
+    async with db_pool.acquire() as conn:
         if existing:
-            await db.execute("""
+            await conn.execute("""
                 UPDATE users
-                SET name = ?, birth_date = ?, birth_time = ?, city = ?,
-                    lat = ?, lon = ?, timezone = ?, language_code = ?, is_active = 1
-                WHERE user_id = ?
-            """, (name, b_date, b_time, city, lat, lon, tz_str, lang, user_id))
+                SET name = $1, birth_date = $2, birth_time = $3, city = $4,
+                    lat = $5, lon = $6, timezone = $7, language_code = $8, is_active = 1
+                WHERE user_id = $9
+            """, name, b_date, b_time, city, lat, lon, tz_str, lang, user_id)
         else:
             trial_end = (now_utc + timedelta(days=7)).isoformat()
-            await db.execute("""
+            await conn.execute("""
                 INSERT INTO users (
                     user_id, name, birth_date, birth_time, city,
                     lat, lon, timezone, trial_until, premium_until,
                     is_active, created_at, trial_used, language_code
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, 1, ?, 1, ?)
-            """, (user_id, name, b_date, b_time, city, lat, lon, tz_str, trial_end, now_utc.isoformat(), lang))
-        await db.commit()
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NULL, 1, $10, 1, $11)
+            """, user_id, name, b_date, b_time, city, lat, lon, tz_str, trial_end, now_utc.isoformat(), lang)
 
 async def add_premium_days(user_id: int, days: int):
     now_utc = datetime.now(UTC)
-    async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        async with db.execute("SELECT premium_until FROM users WHERE user_id = ?", (user_id,)) as cursor:
-            row = await cursor.fetchone()
-
-        current_until = row["premium_until"] if row else None
+    async with db_pool.acquire() as conn:
+        current_until = await conn.fetchval("SELECT premium_until FROM users WHERE user_id = $1", user_id)
         if current_until:
             try:
                 current_dt = datetime.fromisoformat(current_until)
@@ -305,8 +300,7 @@ async def add_premium_days(user_id: int, days: int):
             base_dt = now_utc
 
         new_until = (base_dt + timedelta(days=days)).isoformat()
-        await db.execute("UPDATE users SET premium_until = ?, is_active = 1 WHERE user_id = ?", (new_until, user_id))
-        await db.commit()
+        await conn.execute("UPDATE users SET premium_until = $1, is_active = 1 WHERE user_id = $2", new_until, user_id)
 
 async def get_user_access(user_id: int) -> Dict[str, Any]:
     user = await get_user(user_id)
@@ -339,38 +333,49 @@ async def get_user_access(user_id: int) -> Dict[str, Any]:
     return {"has_access": False, "status": "expired", "days_left": 0}
 
 async def get_active_users() -> List[Dict[str, Any]]:
-    async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        async with db.execute("SELECT * FROM users WHERE is_active = 1") as cursor:
-            rows = await cursor.fetchall()
-            return [dict(row) for row in rows]
+    async with db_pool.acquire() as conn:
+        rows = await conn.fetch("SELECT * FROM users WHERE is_active = 1")
+        return [dict(row) for row in rows]
+
+async def deactivate_user(user_id: int):
+    async with db_pool.acquire() as conn:
+        await conn.execute("UPDATE users SET is_active = 0 WHERE user_id = $1", user_id)
 
 async def mark_forecast_sent(user_id: int, forecast_date: str):
     now = datetime.now(UTC).isoformat()
-    async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute("INSERT OR IGNORE INTO daily_deliveries (user_id, forecast_date, sent_at) VALUES (?, ?, ?)", (user_id, forecast_date, now))
-        await db.execute("UPDATE users SET last_forecast_date = ? WHERE user_id = ?", (forecast_date, user_id))
-        await db.commit()
+    async with db_pool.acquire() as conn:
+        await conn.execute("""
+            INSERT INTO daily_deliveries (user_id, forecast_date, sent_at)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (user_id, forecast_date) DO NOTHING
+        """, user_id, forecast_date, now)
+        await conn.execute("UPDATE users SET last_forecast_date = $1 WHERE user_id = $2", forecast_date, user_id)
 
 async def was_forecast_sent(user_id: int, forecast_date: str) -> bool:
-    async with aiosqlite.connect(DB_PATH) as db:
-        async with db.execute("SELECT 1 FROM daily_deliveries WHERE user_id = ? AND forecast_date = ?", (user_id, forecast_date)) as cursor:
-            return await cursor.fetchone() is not None
+    async with db_pool.acquire() as conn:
+        val = await conn.fetchval(
+            "SELECT 1 FROM daily_deliveries WHERE user_id = $1 AND forecast_date = $2",
+            user_id, forecast_date
+        )
+        return val is not None
 
 async def ai_request_allowed(user_id: int, limit: int = 15) -> bool:
     today = datetime.now(UTC).date().isoformat()
-    async with aiosqlite.connect(DB_PATH) as db:
-        db.row_factory = aiosqlite.Row
-        async with db.execute("SELECT requests FROM ai_usage WHERE user_id = ? AND usage_date = ?", (user_id, today)) as cursor:
-            row = await cursor.fetchone()
-        current = int(row["requests"]) if row else 0
+    async with db_pool.acquire() as conn:
+        current = await conn.fetchval(
+            "SELECT requests FROM ai_usage WHERE user_id = $1 AND usage_date = $2",
+            user_id, today
+        )
+        current = current or 0
         if current >= limit:
             return False
-        if row:
-            await db.execute("UPDATE ai_usage SET requests = requests + 1 WHERE user_id = ? AND usage_date = ?", (user_id, today))
-        else:
-            await db.execute("INSERT INTO ai_usage(user_id, usage_date, requests) VALUES (?, ?, 1)", (user_id, today))
-        await db.commit()
+
+        await conn.execute("""
+            INSERT INTO ai_usage (user_id, usage_date, requests)
+            VALUES ($1, $2, 1)
+            ON CONFLICT (user_id, usage_date)
+            DO UPDATE SET requests = ai_usage.requests + 1
+        """, user_id, today)
         return True
 
 # ============================================================
@@ -445,7 +450,7 @@ def format_transits(transits: List[Dict[str, Any]]) -> str:
     return "\n".join(f"- {t['transit_planet']} {t['aspect']} natal {t['natal_planet']} (orb {t['orb']}°, {t['motion']})" for t in transits)
 
 # ============================================================
-# GEMINI ENGINE
+# GEMINI ENGINE WITH FAILOVER
 # ============================================================
 SYSTEM_PROMPT = """
 You are Aura Astro, an elite psychological astrologer and mindfulness mentor.
@@ -457,25 +462,29 @@ Always finish every single sentence you begin. Use proper punctuation.
 async def call_gemini_safe(prompt: str, lang: str = "en", max_tokens: int = 2000) -> str:
     lang_name = "Russian" if lang.startswith("ru") else "English"
     lang_rule = f"\nCRITICAL: Respond natively and entirely in {lang_name}. Never switch languages."
-    
-    for attempt in range(3):
-        try:
-            response = await asyncio.to_thread(
-                ai_client.models.generate_content,
-                model=MODEL_NAME,
-                contents=prompt + lang_rule,
-                config=genai_types.GenerateContentConfig(
-                    system_instruction=SYSTEM_PROMPT,
-                    temperature=0.6,
-                    max_output_tokens=max_tokens,
-                ),
-            )
-            text = (response.text or "").strip()
-            if text:
-                return text
-        except Exception as e:
-            print(f"[Gemini Retry {attempt + 1}/3] {e}")
-            await asyncio.sleep(1.5 * (attempt + 1))
+    full_prompt = prompt + lang_rule
+
+    models_chain = [MODEL_NAME, FALLBACK_MODEL_NAME]
+
+    for model_candidate in models_chain:
+        for attempt in range(2):
+            try:
+                response = await asyncio.to_thread(
+                    ai_client.models.generate_content,
+                    model=model_candidate,
+                    contents=full_prompt,
+                    config=genai_types.GenerateContentConfig(
+                        system_instruction=SYSTEM_PROMPT,
+                        temperature=0.6,
+                        max_output_tokens=max_tokens,
+                    ),
+                )
+                text = (response.text or "").strip()
+                if text:
+                    return text
+            except Exception as e:
+                print(f"[Gemini Error model={model_candidate} attempt={attempt+1}] {e}")
+                await asyncio.sleep(1.0)
 
     return (
         "Ваша натальная карта — это ориентир для размышлений и осознанного выбора.\n\n"
