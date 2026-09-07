@@ -36,13 +36,6 @@ GEMINI_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_KEY")
 PORT = int(os.getenv("PORT", "8080"))
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Стабильная цепочка: первой идет быстрая 3.5-flash без 503 перегрузок
-MODELS_CHAIN = [
-    "gemini-3.5-flash",
-    "gemini-3.6-pro",
-    "gemini-3.6-flash"
-]
-
 if not BOT_TOKEN or not GEMINI_KEY:
     print("[CRITICAL] TELEGRAM_BOT_TOKEN and GEMINI_API_KEY are required.", flush=True)
     sys.exit(1)
@@ -51,11 +44,39 @@ if not DATABASE_URL:
     print("[CRITICAL] DATABASE_URL is required for Neon PostgreSQL.", flush=True)
     sys.exit(1)
 
+ai_client = genai.Client(api_key=GEMINI_KEY)
+
+# Автоматическое определение реально доступных моделей в API Google
+def get_verified_models() -> List[str]:
+    try:
+        available_models = [
+            m.name.replace("models/", "")
+            for m in ai_client.models.list()
+            if hasattr(m, "supported_actions") and m.supported_actions and "generateContent" in m.supported_actions
+        ]
+        # Проверяем модели по приоритету стабильности
+        preferred = [
+            "gemini-2.5-flash",
+            "gemini-2.0-flash",
+            "gemini-1.5-flash",
+            "gemini-1.5-pro",
+            "gemini-2.5-pro"
+        ]
+        chain = [m for m in preferred if m in available_models]
+        if not chain:
+            chain = [m for m in available_models if "flash" in m or "pro" in m]
+        return chain if chain else ["gemini-2.5-flash"]
+    except Exception as e:
+        print(f"[Model Discovery Warning] {e}. Falling back to default list.", flush=True)
+        return ["gemini-2.5-flash", "gemini-1.5-flash"]
+
+MODELS_CHAIN = get_verified_models()
+print(f"🤖 Active Models Chain: {MODELS_CHAIN}", flush=True)
+
 bot = Bot(token=BOT_TOKEN)
 dp = Dispatcher(storage=MemoryStorage())
 geolocator = Nominatim(user_agent="aura_astro_engine_prod_v2", timeout=7)
 tf = TimezoneFinder()
-ai_client = genai.Client(api_key=GEMINI_KEY)
 UTC = timezone.utc
 db_pool: Optional[asyncpg.Pool] = None
 
@@ -455,7 +476,7 @@ def format_transits(transits: List[Dict[str, Any]]) -> str:
     return "\n".join(f"- {t['transit_planet']} {t['aspect']} natal {t['natal_planet']} (orb {t['orb']}°, {t['motion']})" for t in transits)
 
 # ============================================================
-# GEMINI ENGINE WITH INSTANT FAILOVER
+# GEMINI ENGINE WITH SAFE FAILOVER
 # ============================================================
 SYSTEM_PROMPT = """
 You are Aura Astro, an elite psychological astrologer and mindfulness mentor.
@@ -488,6 +509,8 @@ async def call_gemini_safe(prompt: str, lang: str = "en", max_tokens: int = 2000
             err_str = str(e)
             if "503" in err_str:
                 print(f"[Gemini 503 High Demand -> Failover from {model_candidate}]", flush=True)
+            elif "404" in err_str:
+                print(f"[Gemini 404 Deprecated/Not Found -> Failover from {model_candidate}]", flush=True)
             else:
                 print(f"[Gemini Failover -> model={model_candidate}] {e}", flush=True)
             continue
