@@ -36,12 +36,11 @@ GEMINI_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_KEY")
 PORT = int(os.getenv("PORT", "8080"))
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Отказоустойчивая цепочка текстовых моделей
+# Актуальная цепочка моделей без 404 с мгновенной страховкой
 MODELS_CHAIN = [
-    "gemini-2.5-flash",
-    "gemini-2.0-flash",
+    "gemini-3.6-flash",
     "gemini-3.5-flash",
-    "gemini-3.6-flash"
+    "gemini-3.6-pro"
 ]
 
 if not BOT_TOKEN or not GEMINI_KEY:
@@ -107,7 +106,7 @@ TEXTS = {
         "limit_reached": "Вы исчерпали лимит запросов к карте на сегодня. Приходите завтра!",
         "paywall_msg": "🔒 Бесплатный доступ завершен.\n\nОформите подписку, чтобы продолжить получать прогнозы и задавать вопросы карте.",
         "ask_prompt": "💬 СПРОСИТЬ КАРТУ\n\nЗадайте один вопрос о себе, работе, отношениях или выборе:\n\n_Например: В чем корень моих сомнений при смене работы?_",
-        "analyzing": "🧠 Анализирую карту и транзиты планет...",
+        "analyzing": "🧠 Анализирую натальную карту и положение планет...",
         "plan_1m_btn": "⭐ 1 месяц — 199 Stars",
         "plan_3m_btn": "✨ 3 месяца — 450 Stars",
         "plan_6m_btn": "⚡ 6 месяцев — 800 Stars",
@@ -170,7 +169,7 @@ def t(key: str, lang: str = "en", **kwargs) -> str:
     return text.format(**kwargs) if kwargs else text
 
 # ============================================================
-# PLANS & KEYBOARDS
+# KEYBOARDS
 # ============================================================
 PRICING_PLANS = {
     "plan_1m": {"title": "🌟 1 Month Access", "description": "30 days of forecasts & Ask My Chart.", "stars": 199, "days": 30},
@@ -503,12 +502,12 @@ Client name: {name}
 Placements:
 {chr(10).join(f"- {k}: {v}" for k, v in bp.items())}
 
-Write a comprehensive, inspiring psychological interpretation of this chart (around 250 words).
+Write a comprehensive, inspiring psychological interpretation of this chart (around 260 words).
 Structure strictly into 4 sections:
-1. Core Architecture (Sun & Moon synergy, inner motives)
-2. Outer Persona (Ascendant impact on image and first impressions)
-3. Drive & Strategy (Mars & Mercury: action, intellect, willpower)
-4. Distinct Superpower (Name 1 unique psychological superpower and explain it in 2 complete sentences)
+1. Архитектура личности (Sun & Moon synergy, inner motives)
+2. Внешний образ и проявление (Ascendant impact on image and first impressions)
+3. Стратегия действий и мышление (Mars & Mercury: action, intellect, willpower)
+4. Уникальная суперсила (Name 1 unique psychological superpower and explain it in 2 complete sentences)
 
 Finish every sentence with a period.
 """
@@ -719,24 +718,40 @@ async def cb_menu(cb: types.CallbackQuery):
 
 @dp.callback_query(F.data == "chart")
 async def cb_chart(cb: types.CallbackQuery):
+    """Полноценный психологический разбор натальной карты."""
     await cb.answer()
     user = await get_user(cb.from_user.id)
     if not user:
         return
     lang = user.get("language_code", "en")
+    
+    status_msg = await cb.message.answer(t("analyzing", lang))
+    
     b_utc = parse_birth_dt(user)
     bp = get_natal_blueprint(b_utc, float(user["lat"]), float(user["lon"]))
+    analysis = await generate_blueprint_text(user["name"], bp, lang)
     
+    await status_msg.delete()
+
     title = "🌌 ВАША НАТАЛЬНАЯ КАРТА" if lang.startswith("ru") else "🌌 YOUR NATAL CHART"
-    text = (
-        f"{title}\n\n"
-        f"☀️ Sun: {bp['Sun']}\n🌙 Moon: {bp['Moon']}\n🌅 Ascendant: {bp['Ascendant']}\n"
-        f"☿ Mercury: {bp['Mercury']}\n♀ Venus: {bp['Venus']}\n♂ Mars: {bp['Mars']}\n"
-        f"♃ Jupiter: {bp['Jupiter']}\n♄ Saturn: {bp['Saturn']}\n♅ Uranus: {bp['Uranus']}\n"
-        f"♆ Neptune: {bp['Neptune']}\n♇ Pluto: {bp['Pluto']}\n\n"
-        f"📍 {user['city']}\n🕰 {user['timezone']}"
+    full_text = (
+        f"{title} — {user['name'].upper()}\n\n"
+        f"☀️ Sun: {bp['Sun']}\n"
+        f"🌙 Moon: {bp['Moon']}\n"
+        f"🌅 Ascendant: {bp['Ascendant']}\n"
+        f"☿ Mercury: {bp['Mercury']}\n"
+        f"♀ Venus: {bp['Venus']}\n"
+        f"♂ Mars: {bp['Mars']}\n"
+        f"♃ Jupiter: {bp['Jupiter']}\n"
+        f"♄ Saturn: {bp['Saturn']}\n"
+        f"♅ Uranus: {bp['Uranus']}\n"
+        f"♆ Neptune: {bp['Neptune']}\n"
+        f"♇ Pluto: {bp['Pluto']}\n\n"
+        f"📍 {user['city']}\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"{analysis}"
     )
-    await send_long_message(cb.message.chat.id, text, back_menu_keyboard(lang))
+    await send_long_message(cb.message.chat.id, full_text, back_menu_keyboard(lang))
 
 @dp.callback_query(F.data.in_({"forecast", "tomorrow"}))
 async def cb_forecast(cb: types.CallbackQuery):
