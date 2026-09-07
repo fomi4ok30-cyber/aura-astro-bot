@@ -36,11 +36,11 @@ GEMINI_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_KEY")
 PORT = int(os.getenv("PORT", "8080"))
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Актуальная цепочка моделей без 404 с мгновенной страховкой
+# Стабильная цепочка: первой идет быстрая 3.5-flash без 503 перегрузок
 MODELS_CHAIN = [
-    "gemini-3.6-flash",
     "gemini-3.5-flash",
-    "gemini-3.6-pro"
+    "gemini-3.6-pro",
+    "gemini-3.6-flash"
 ]
 
 if not BOT_TOKEN or not GEMINI_KEY:
@@ -485,7 +485,11 @@ async def call_gemini_safe(prompt: str, lang: str = "en", max_tokens: int = 2000
             if text:
                 return text
         except Exception as e:
-            print(f"[Gemini Failover -> model={model_candidate}] {e}", flush=True)
+            err_str = str(e)
+            if "503" in err_str:
+                print(f"[Gemini 503 High Demand -> Failover from {model_candidate}]", flush=True)
+            else:
+                print(f"[Gemini Failover -> model={model_candidate}] {e}", flush=True)
             continue
 
     return (
