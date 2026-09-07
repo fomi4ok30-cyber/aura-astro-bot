@@ -32,11 +32,11 @@ from google.genai import types as genai_types
 # CONFIG
 # ============================================================
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-GEMINI_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_KEY = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_KEY")
 PORT = int(os.getenv("PORT", "8080"))
 DATABASE_URL = os.getenv("DATABASE_URL")
-MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
-FALLBACK_MODEL_NAME = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash")
+MODEL_NAME = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+FALLBACK_MODEL_NAME = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-1.5-flash")
 
 if not BOT_TOKEN or not GEMINI_KEY:
     print("[CRITICAL] TELEGRAM_BOT_TOKEN and GEMINI_API_KEY are required.")
@@ -483,7 +483,7 @@ async def call_gemini_safe(prompt: str, lang: str = "en", max_tokens: int = 2000
                 if text:
                     return text
             except Exception as e:
-                print(f"[Gemini Error model={model_candidate} attempt={attempt+1}] {e}")
+                print(f"[Gemini Error model={model_candidate} attempt={attempt+1}] {e}", flush=True)
                 await asyncio.sleep(1.0)
 
     return (
