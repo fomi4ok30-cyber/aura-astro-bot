@@ -58,14 +58,13 @@ if not DATABASE_URL:
 # Актуальная основная модель.
 # Можно переопределить через GEMINI_MODEL.
 DEFAULT_GEMINI_MODEL = os.getenv(
-    "GEMINI_MODEL",
-    "gemini-3.8-flash",
-)
 
-# Если основная модель временно недоступна,
-# пробуем следующие.
+  "GEMINI_MODEL",
+    "gemini-3.8-flash",
+).strip()
+
 MODELS_CHAIN = [
-    DEFAULT_GEMINI_MODEL,
+    "gemini-3.8-flash",
     "gemini-3.7-flash",
     "gemini-3.6-flash",
     "gemini-3.1-pro-preview",
