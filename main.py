@@ -55,13 +55,19 @@ if not DATABASE_URL:
 # GEMINI
 # ============================================================
 
-# Можно изменить через переменную окружения GEMINI_MODEL.
-# Основная модель:
-DEFAULT_GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.7-flash")
+# Актуальная основная модель.
+# Можно переопределить через GEMINI_MODEL.
+DEFAULT_GEMINI_MODEL = os.getenv(
+    "GEMINI_MODEL",
+    "gemini-3.8-flash",
+)
 
-# Резервная модель.
+# Если основная модель временно недоступна,
+# пробуем следующие.
 MODELS_CHAIN = [
     DEFAULT_GEMINI_MODEL,
+    "gemini-3.7-flash",
+    "gemini-3.6-flash",
     "gemini-3.1-pro-preview",
 ]
 
@@ -71,16 +77,21 @@ MODELS_CHAIN = [
 # ============================================================
 
 bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher(storage=MemoryStorage())
+
+dp = Dispatcher(
+    storage=MemoryStorage()
+)
 
 geolocator = Nominatim(
-    user_agent="aura_astro_engine_prod_v3",
+    user_agent="aura_astro_engine_prod_v4",
     timeout=7,
 )
 
 tf = TimezoneFinder()
 
-ai_client = genai.Client(api_key=GEMINI_KEY)
+ai_client = genai.Client(
+    api_key=GEMINI_KEY
+)
 
 UTC = timezone.utc
 
@@ -93,6 +104,7 @@ db_pool: Optional[asyncpg.Pool] = None
 
 TEXTS = {
     "ru": {
+
         "welcome_back": (
             "✨ С возвращением, {name}!\n\n"
             "Статус: {status}\n\n"
@@ -101,8 +113,9 @@ TEXTS = {
 
         "start_intro": (
             "✨ Добро пожаловать в Aura Astro.\n\n"
-            "Ваш персональный астрологический проводник объединяет "
-            "точные расчёты Swiss Ephemeris и глубокую психологию.\n\n"
+            "Ваш персональный астрологический проводник "
+            "объединяет точные расчёты Swiss Ephemeris "
+            "и глубокую психологическую интерпретацию.\n\n"
             "Давайте построим вашу натальную карту.\n\n"
             "Как к вам обращаться?"
         ),
@@ -138,7 +151,9 @@ TEXTS = {
             "Например: `Москва, Россия` или `Минск, Беларусь`."
         ),
 
-        "calc_coords": "🔭 Рассчитываю координаты и натальную карту...",
+        "calc_coords": (
+            "🔭 Рассчитываю координаты и натальную карту..."
+        ),
 
         "city_not_found": (
             "⚠️ Город не найден.\n\n"
@@ -210,8 +225,13 @@ TEXTS = {
         "plan_6m_btn": "⚡ 6 месяцев — 800 Stars",
         "plan_1y_btn": "👑 1 год — 1200 Stars",
 
-        "payment_success": "🎉 Доступ активирован на {days} дней!",
-        "payment_already_processed": "✅ Этот платёж уже был обработан.",
+        "payment_success": (
+            "🎉 Доступ активирован на {days} дней!"
+        ),
+
+        "payment_already_processed": (
+            "✅ Этот платёж уже был обработан."
+        ),
 
         "chart_title": "🌌 ВАША НАТАЛЬНАЯ КАРТА",
         "chart_title_short": "🌌 НАТАЛЬНАЯ КАРТА",
@@ -229,18 +249,53 @@ TEXTS = {
         "neptune": "Нептун",
         "pluto": "Плутон",
 
-        "meaning_sun": "личность, воля и жизненная энергия",
-        "meaning_moon": "эмоции, внутренние потребности и чувство безопасности",
-        "meaning_ascendant": "внешний образ, первое впечатление и способ проявляться",
-        "meaning_mc": "карьера, статус и направление профессиональной реализации",
-        "meaning_mercury": "мышление, речь и способ обрабатывать информацию",
-        "meaning_venus": "любовь, симпатии, ценности и личный вкус",
-        "meaning_mars": "действие, энергия, напор и способ добиваться своего",
-        "meaning_jupiter": "рост, убеждения, возможности и расширение горизонтов",
-        "meaning_saturn": "дисциплина, границы, ответственность и зрелость",
-        "meaning_uranus": "свобода, перемены и стремление к независимости",
-        "meaning_neptune": "интуиция, идеалы, воображение и чувствительность",
-        "meaning_pluto": "глубокие изменения, сила и внутренние трансформации",
+        "meaning_sun": (
+            "личность, воля и жизненная энергия"
+        ),
+
+        "meaning_moon": (
+            "эмоции, внутренние потребности и чувство безопасности"
+        ),
+
+        "meaning_ascendant": (
+            "внешний образ, первое впечатление и способ проявляться"
+        ),
+
+        "meaning_mc": (
+            "карьера, статус и направление профессиональной реализации"
+        ),
+
+        "meaning_mercury": (
+            "мышление, речь и способ обрабатывать информацию"
+        ),
+
+        "meaning_venus": (
+            "любовь, симпатии, ценности и личный вкус"
+        ),
+
+        "meaning_mars": (
+            "действие, энергия, напор и способ добиваться своего"
+        ),
+
+        "meaning_jupiter": (
+            "рост, убеждения, возможности и расширение горизонтов"
+        ),
+
+        "meaning_saturn": (
+            "дисциплина, границы, ответственность и зрелость"
+        ),
+
+        "meaning_uranus": (
+            "свобода, перемены и стремление к независимости"
+        ),
+
+        "meaning_neptune": (
+            "интуиция, идеалы, воображение и чувствительность"
+        ),
+
+        "meaning_pluto": (
+            "глубокие изменения, сила и внутренние трансформации"
+        ),
 
         "location": "Место рождения",
 
@@ -253,6 +308,7 @@ TEXTS = {
     },
 
     "en": {
+
         "welcome_back": (
             "✨ Welcome back, {name}!\n\n"
             "Status: {status}\n\n"
@@ -262,7 +318,8 @@ TEXTS = {
         "start_intro": (
             "✨ Welcome to Aura Astro.\n\n"
             "Your personal astrology companion combines "
-            "Swiss Ephemeris calculations with psychological AI guidance.\n\n"
+            "Swiss Ephemeris calculations with "
+            "deep psychological interpretation.\n\n"
             "Let's build your personal chart.\n\n"
             "What is your preferred name?"
         ),
@@ -298,7 +355,9 @@ TEXTS = {
             "Example: `London, UK` or `Chicago, USA`."
         ),
 
-        "calc_coords": "🔭 Calculating coordinates and natal chart...",
+        "calc_coords": (
+            "🔭 Calculating coordinates and natal chart..."
+        ),
 
         "city_not_found": (
             "⚠️ Location not found.\n\n"
@@ -360,17 +419,26 @@ TEXTS = {
             "🧠 Looking at your chart and current planetary transits..."
         ),
 
-        "subscription_title": "⭐ AURA ASTRO — MEMBERSHIP",
+        "subscription_title": (
+            "⭐ AURA ASTRO — MEMBERSHIP"
+        ),
 
-        "subscription_choose": "Choose your access plan:",
+        "subscription_choose": (
+            "Choose your access plan:"
+        ),
 
         "plan_1m_btn": "⭐ 1 Month — 199 Stars",
         "plan_3m_btn": "✨ 3 Months — 450 Stars",
         "plan_6m_btn": "⚡ 6 Months — 800 Stars",
         "plan_1y_btn": "👑 1 Year — 1200 Stars",
 
-        "payment_success": "🎉 Access activated for {days} days!",
-        "payment_already_processed": "✅ This payment has already been processed.",
+        "payment_success": (
+            "🎉 Access activated for {days} days!"
+        ),
+
+        "payment_already_processed": (
+            "✅ This payment has already been processed."
+        ),
 
         "chart_title": "🌌 YOUR NATAL CHART",
         "chart_title_short": "🌌 NATAL CHART",
@@ -388,18 +456,53 @@ TEXTS = {
         "neptune": "Neptune",
         "pluto": "Pluto",
 
-        "meaning_sun": "personality, will and life energy",
-        "meaning_moon": "emotions, inner needs and sense of security",
-        "meaning_ascendant": "outer image, first impression and way of expressing yourself",
-        "meaning_mc": "career, status and professional direction",
-        "meaning_mercury": "thinking, communication and information processing",
-        "meaning_venus": "love, attraction, values and personal taste",
-        "meaning_mars": "action, energy, drive and determination",
-        "meaning_jupiter": "growth, beliefs, opportunities and expansion",
-        "meaning_saturn": "discipline, boundaries, responsibility and maturity",
-        "meaning_uranus": "freedom, change and independence",
-        "meaning_neptune": "intuition, ideals, imagination and sensitivity",
-        "meaning_pluto": "deep change, power and inner transformation",
+        "meaning_sun": (
+            "personality, will and life energy"
+        ),
+
+        "meaning_moon": (
+            "emotions, inner needs and sense of security"
+        ),
+
+        "meaning_ascendant": (
+            "outer image, first impression and way of expressing yourself"
+        ),
+
+        "meaning_mc": (
+            "career, status and professional direction"
+        ),
+
+        "meaning_mercury": (
+            "thinking, communication and information processing"
+        ),
+
+        "meaning_venus": (
+            "love, attraction, values and personal taste"
+        ),
+
+        "meaning_mars": (
+            "action, energy, drive and determination"
+        ),
+
+        "meaning_jupiter": (
+            "growth, beliefs, opportunities and expansion"
+        ),
+
+        "meaning_saturn": (
+            "discipline, boundaries, responsibility and maturity"
+        ),
+
+        "meaning_uranus": (
+            "freedom, change and independence"
+        ),
+
+        "meaning_neptune": (
+            "intuition, ideals, imagination and sensitivity"
+        ),
+
+        "meaning_pluto": (
+            "deep change, power and inner transformation"
+        ),
 
         "location": "Birth place",
 
@@ -414,20 +517,68 @@ TEXTS = {
 
 
 def normalize_lang(lang: Optional[str]) -> str:
-    return "ru" if (lang or "").lower().startswith("ru") else "en"
+    return (
+        "ru"
+        if (lang or "").lower().startswith("ru")
+        else "en"
+    )
 
 
-def t(key: str, lang: str = "en", **kwargs) -> str:
+def t(
+    key: str,
+    lang: str = "en",
+    **kwargs,
+) -> str:
+
     lang = normalize_lang(lang)
-    text = TEXTS.get(lang, TEXTS["en"]).get(
+
+    text = TEXTS.get(
+        lang,
+        TEXTS["en"],
+    ).get(
         key,
-        TEXTS["en"].get(key, "")
+        TEXTS["en"].get(key, ""),
     )
 
     if kwargs:
         return text.format(**kwargs)
 
     return text
+
+
+# ============================================================
+# ZODIAC LOCALIZATION
+# ============================================================
+
+ZODIAC_RU = [
+    "Овен ♈",
+    "Телец ♉",
+    "Близнецы ♊",
+    "Рак ♋",
+    "Лев ♌",
+    "Дева ♍",
+    "Весы ♎",
+    "Скорпион ♏",
+    "Стрелец ♐",
+    "Козерог ♑",
+    "Водолей ♒",
+    "Рыбы ♓",
+]
+
+ZODIAC_EN = [
+    "Aries ♈",
+    "Taurus ♉",
+    "Gemini ♊",
+    "Cancer ♋",
+    "Leo ♌",
+    "Virgo ♍",
+    "Libra ♎",
+    "Scorpio ♏",
+    "Sagittarius ♐",
+    "Capricorn ♑",
+    "Aquarius ♒",
+    "Pisces ♓",
+]
 
 
 # ============================================================
@@ -466,12 +617,31 @@ PLACEMENT_ICONS = {
 }
 
 
-def format_placement_line(key: str, value: str, lang: str) -> str:
-    icon = PLACEMENT_ICONS.get(key, "•")
-    label = t(key.lower(), lang)
-    meaning = t(f"meaning_{key.lower()}", lang)
+def format_placement_line(
+    key: str,
+    value: str,
+    lang: str,
+) -> str:
 
-    return f"{icon} {label}: {value}\n   ↳ {meaning}"
+    icon = PLACEMENT_ICONS.get(
+        key,
+        "•",
+    )
+
+    label = t(
+        key.lower(),
+        lang,
+    )
+
+    meaning = t(
+        f"meaning_{key.lower()}",
+        lang,
+    )
+
+    return (
+        f"{icon} {label}: {value}\n"
+        f"   ↳ {meaning}"
+    )
 
 
 def build_chart_card(
@@ -481,18 +651,28 @@ def build_chart_card(
     include_all: bool = True,
 ) -> str:
 
-    title = t("chart_title", lang)
+    title = t(
+        "chart_title",
+        lang,
+    )
 
-    keys = PLACEMENT_KEYS if include_all else [
-        "Sun",
-        "Moon",
-        "Ascendant",
-        "Mercury",
-        "Venus",
-        "Mars",
-        "Jupiter",
-        "Saturn",
-    ]
+    if include_all:
+
+        keys = PLACEMENT_KEYS
+
+    else:
+
+        keys = [
+            "Sun",
+            "Moon",
+            "Ascendant",
+            "MC",
+            "Mercury",
+            "Venus",
+            "Mars",
+            "Jupiter",
+            "Saturn",
+        ]
 
     lines = [
         f"{title} — {html.escape(name).upper()}",
@@ -500,7 +680,9 @@ def build_chart_card(
     ]
 
     for key in keys:
+
         if key in bp:
+
             lines.append(
                 format_placement_line(
                     key,
@@ -508,9 +690,12 @@ def build_chart_card(
                     lang,
                 )
             )
+
             lines.append("")
 
-    return "\n".join(lines).rstrip()
+    return "\n".join(
+        lines
+    ).rstrip()
 
 
 # ============================================================
@@ -518,6 +703,7 @@ def build_chart_card(
 # ============================================================
 
 PRICING_PLANS = {
+
     "plan_1m": {
         "title": "🌟 1 Month Access",
         "description": "30 days of forecasts & Ask My Chart.",
@@ -548,36 +734,54 @@ PRICING_PLANS = {
 }
 
 
-def pricing_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
+def pricing_keyboard(
+    lang: str = "en",
+) -> InlineKeyboardMarkup:
+
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text=t("plan_1m_btn", lang),
+                    text=t(
+                        "plan_1m_btn",
+                        lang,
+                    ),
                     callback_data="buy_plan_1m",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("plan_3m_btn", lang),
+                    text=t(
+                        "plan_3m_btn",
+                        lang,
+                    ),
                     callback_data="buy_plan_3m",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("plan_6m_btn", lang),
+                    text=t(
+                        "plan_6m_btn",
+                        lang,
+                    ),
                     callback_data="buy_plan_6m",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("plan_1y_btn", lang),
+                    text=t(
+                        "plan_1y_btn",
+                        lang,
+                    ),
                     callback_data="buy_plan_1y",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("btn_menu", lang),
+                    text=t(
+                        "btn_menu",
+                        lang,
+                    ),
                     callback_data="menu",
                 )
             ],
@@ -585,49 +789,77 @@ def pricing_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
     )
 
 
-def main_menu_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
+def main_menu_keyboard(
+    lang: str = "en",
+) -> InlineKeyboardMarkup:
+
     return InlineKeyboardMarkup(
         inline_keyboard=[
+
             [
                 InlineKeyboardButton(
-                    text=t("btn_chart", lang),
+                    text=t(
+                        "btn_chart",
+                        lang,
+                    ),
                     callback_data="chart",
                 ),
                 InlineKeyboardButton(
-                    text=t("btn_forecast", lang),
+                    text=t(
+                        "btn_forecast",
+                        lang,
+                    ),
                     callback_data="forecast",
                 ),
             ],
 
             [
                 InlineKeyboardButton(
-                    text=t("btn_tomorrow", lang),
+                    text=t(
+                        "btn_tomorrow",
+                        lang,
+                    ),
                     callback_data="tomorrow",
                 ),
                 InlineKeyboardButton(
-                    text=t("btn_ask", lang),
+                    text=t(
+                        "btn_ask",
+                        lang,
+                    ),
                     callback_data="ask_chart",
                 ),
             ],
 
             [
                 InlineKeyboardButton(
-                    text=t("btn_rel", lang),
+                    text=t(
+                        "btn_rel",
+                        lang,
+                    ),
                     callback_data="topic_relationships",
                 ),
                 InlineKeyboardButton(
-                    text=t("btn_career", lang),
+                    text=t(
+                        "btn_career",
+                        lang,
+                    ),
                     callback_data="topic_career",
                 ),
             ],
 
             [
                 InlineKeyboardButton(
-                    text=t("btn_money", lang),
+                    text=t(
+                        "btn_money",
+                        lang,
+                    ),
                     callback_data="topic_money",
                 ),
                 InlineKeyboardButton(
-                    text=t("btn_sub", lang),
+                    text=t(
+                        "btn_sub",
+                        lang,
+                    ),
                     callback_data="subscription",
                 ),
             ],
@@ -635,12 +867,18 @@ def main_menu_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
     )
 
 
-def back_menu_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
+def back_menu_keyboard(
+    lang: str = "en",
+) -> InlineKeyboardMarkup:
+
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text=t("btn_menu", lang),
+                    text=t(
+                        "btn_menu",
+                        lang,
+                    ),
                     callback_data="menu",
                 )
             ]
@@ -653,11 +891,15 @@ def back_menu_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
 # ============================================================
 
 async def init_db():
+
     global db_pool
 
     clean_url = DATABASE_URL
 
-    if clean_url.startswith("postgres://"):
+    if clean_url.startswith(
+        "postgres://"
+    ):
+
         clean_url = clean_url.replace(
             "postgres://",
             "postgresql://",
@@ -724,14 +966,26 @@ async def init_db():
         """)
 
 
-async def get_user(user_id: int) -> Optional[Dict[str, Any]]:
+async def get_user(
+    user_id: int,
+) -> Optional[Dict[str, Any]]:
+
     async with db_pool.acquire() as conn:
+
         row = await conn.fetchrow(
-            "SELECT * FROM users WHERE user_id = $1",
+            """
+            SELECT *
+            FROM users
+            WHERE user_id = $1
+            """,
             user_id,
         )
 
-        return dict(row) if row else None
+        return (
+            dict(row)
+            if row
+            else None
+        )
 
 
 async def save_or_update_user(
@@ -745,17 +999,25 @@ async def save_or_update_user(
     tz_str: str,
     lang_code: str,
 ):
-    now_utc = datetime.now(UTC)
 
-    existing = await get_user(user_id)
+    now_utc = datetime.now(
+        UTC
+    )
 
-    lang = normalize_lang(lang_code)
+    existing = await get_user(
+        user_id
+    )
+
+    lang = normalize_lang(
+        lang_code
+    )
 
     async with db_pool.acquire() as conn:
 
         if existing:
 
-            await conn.execute("""
+            await conn.execute(
+                """
                 UPDATE users
                 SET
                     name = $1,
@@ -768,7 +1030,7 @@ async def save_or_update_user(
                     language_code = $8,
                     is_active = 1
                 WHERE user_id = $9
-            """,
+                """,
                 name,
                 b_date,
                 b_time,
@@ -783,10 +1045,12 @@ async def save_or_update_user(
         else:
 
             trial_end = (
-                now_utc + timedelta(days=7)
+                now_utc
+                + timedelta(days=7)
             ).isoformat()
 
-            await conn.execute("""
+            await conn.execute(
+                """
                 INSERT INTO users (
                     user_id,
                     name,
@@ -819,7 +1083,7 @@ async def save_or_update_user(
                     1,
                     $11
                 )
-            """,
+                """,
                 user_id,
                 name,
                 b_date,
@@ -838,7 +1102,10 @@ async def add_premium_days(
     user_id: int,
     days: int,
 ):
-    now_utc = datetime.now(UTC)
+
+    now_utc = datetime.now(
+        UTC
+    )
 
     async with db_pool.acquire() as conn:
 
@@ -854,13 +1121,17 @@ async def add_premium_days(
         if current_until:
 
             try:
+
                 current_dt = datetime.fromisoformat(
                     current_until
                 )
 
                 if current_dt.tzinfo is None:
-                    current_dt = current_dt.replace(
-                        tzinfo=UTC
+
+                    current_dt = (
+                        current_dt.replace(
+                            tzinfo=UTC
+                        )
                     )
 
                 base_dt = max(
@@ -869,19 +1140,23 @@ async def add_premium_days(
                 )
 
             except ValueError:
+
                 base_dt = now_utc
 
         else:
+
             base_dt = now_utc
 
         new_until = (
-            base_dt + timedelta(days=days)
+            base_dt
+            + timedelta(days=days)
         ).isoformat()
 
         await conn.execute(
             """
             UPDATE users
-            SET premium_until = $1,
+            SET
+                premium_until = $1,
                 is_active = 1
             WHERE user_id = $2
             """,
@@ -933,7 +1208,9 @@ async def record_payment(
             stars,
             days,
             payload,
-            datetime.now(UTC).isoformat(),
+            datetime.now(
+                UTC
+            ).isoformat(),
         )
 
         return result is not None
@@ -943,18 +1220,25 @@ async def get_user_access(
     user_id: int,
 ) -> Dict[str, Any]:
 
-    user = await get_user(user_id)
+    user = await get_user(
+        user_id
+    )
 
-    now_utc = datetime.now(UTC)
+    now_utc = datetime.now(
+        UTC
+    )
 
     if not user:
+
         return {
             "has_access": False,
             "status": "not_found",
             "days_left": 0,
         }
 
-    premium_until = user.get("premium_until")
+    premium_until = user.get(
+        "premium_until"
+    )
 
     if premium_until:
 
@@ -965,8 +1249,11 @@ async def get_user_access(
             )
 
             if prem_dt.tzinfo is None:
-                prem_dt = prem_dt.replace(
-                    tzinfo=UTC
+
+                prem_dt = (
+                    prem_dt.replace(
+                        tzinfo=UTC
+                    )
                 )
 
             if prem_dt > now_utc:
@@ -976,14 +1263,19 @@ async def get_user_access(
                     "status": "premium",
                     "days_left": max(
                         1,
-                        (prem_dt - now_utc).days + 1,
+                        (
+                            prem_dt
+                            - now_utc
+                        ).days + 1,
                     ),
                 }
 
         except ValueError:
             pass
 
-    trial_until = user.get("trial_until")
+    trial_until = user.get(
+        "trial_until"
+    )
 
     if trial_until:
 
@@ -994,8 +1286,11 @@ async def get_user_access(
             )
 
             if trial_dt.tzinfo is None:
-                trial_dt = trial_dt.replace(
-                    tzinfo=UTC
+
+                trial_dt = (
+                    trial_dt.replace(
+                        tzinfo=UTC
+                    )
                 )
 
             if trial_dt > now_utc:
@@ -1005,7 +1300,10 @@ async def get_user_access(
                     "status": "trial",
                     "days_left": max(
                         1,
-                        (trial_dt - now_utc).days + 1,
+                        (
+                            trial_dt
+                            - now_utc
+                        ).days + 1,
                     ),
                 }
 
@@ -1020,6 +1318,7 @@ async def get_user_access(
 
 
 async def get_active_users() -> List[Dict[str, Any]]:
+
     async with db_pool.acquire() as conn:
 
         rows = await conn.fetch(
@@ -1036,7 +1335,9 @@ async def get_active_users() -> List[Dict[str, Any]]:
         ]
 
 
-async def deactivate_user(user_id: int):
+async def deactivate_user(
+    user_id: int,
+):
 
     async with db_pool.acquire() as conn:
 
@@ -1055,7 +1356,9 @@ async def mark_forecast_sent(
     forecast_date: str,
 ):
 
-    now = datetime.now(UTC).isoformat()
+    now = datetime.now(
+        UTC
+    ).isoformat()
 
     async with db_pool.acquire() as conn:
 
@@ -1115,20 +1418,30 @@ async def ai_request_allowed(
     limit: int = 15,
 ) -> bool:
 
-    user = await get_user(user_id)
+    user = await get_user(
+        user_id
+    )
 
     if not user:
         return False
 
     try:
+
         tz = ZoneInfo(
-            user.get("timezone", "UTC")
+            user.get(
+                "timezone",
+                "UTC",
+            )
         )
+
     except Exception:
+
         tz = UTC
 
     local_today = (
-        datetime.now(UTC)
+        datetime.now(
+            UTC
+        )
         .astimezone(tz)
         .date()
         .isoformat()
@@ -1181,22 +1494,6 @@ async def ai_request_allowed(
 # ASTRO ENGINE
 # ============================================================
 
-ZODIAC = [
-    "Aries ♈",
-    "Taurus ♉",
-    "Gemini ♊",
-    "Cancer ♋",
-    "Leo ♌",
-    "Virgo ♍",
-    "Libra ♎",
-    "Scorpio ♏",
-    "Sagittarius ♐",
-    "Capricorn ♑",
-    "Aquarius ♒",
-    "Pisces ♓",
-]
-
-
 TRACKED_PLANETS = {
     "Sun": swe.SUN,
     "Moon": swe.MOON,
@@ -1220,7 +1517,10 @@ ASPECTS = {
 }
 
 
-def normalize_deg(deg: float) -> float:
+def normalize_deg(
+    deg: float,
+) -> float:
+
     return deg % 360.0
 
 
@@ -1229,7 +1529,9 @@ def angular_distance(
     b: float,
 ) -> float:
 
-    diff = abs(a - b) % 360.0
+    diff = abs(
+        a - b
+    ) % 360.0
 
     return min(
         diff,
@@ -1237,15 +1539,22 @@ def angular_distance(
     )
 
 
-def deg_to_sign(deg: float) -> str:
+def deg_to_sign(
+    deg: float,
+    lang: str = "ru",
+) -> str:
 
-    deg = normalize_deg(deg)
+    deg = normalize_deg(
+        deg
+    )
 
     sign_index = int(
         deg // 30
     )
 
-    sign_degree = deg % 30
+    sign_degree = (
+        deg % 30
+    )
 
     whole_degree = int(
         sign_degree
@@ -1253,22 +1562,34 @@ def deg_to_sign(deg: float) -> str:
 
     minutes = int(
         round(
-            (sign_degree - whole_degree) * 60
+            (
+                sign_degree
+                - whole_degree
+            ) * 60
         )
     )
 
     if minutes >= 60:
+
         whole_degree += 1
         minutes = 0
 
     if whole_degree >= 30:
+
         whole_degree = 0
+
         sign_index = (
             sign_index + 1
         ) % 12
 
+    zodiac = (
+        ZODIAC_RU
+        if normalize_lang(lang) == "ru"
+        else ZODIAC_EN
+    )
+
     return (
-        f"{ZODIAC[sign_index]} "
+        f"{zodiac[sign_index]} "
         f"{whole_degree}°{minutes:02d}'"
     )
 
@@ -1277,7 +1598,9 @@ def get_julian_day(
     dt_utc: datetime,
 ) -> float:
 
-    dt_utc = dt_utc.astimezone(UTC)
+    dt_utc = dt_utc.astimezone(
+        UTC
+    )
 
     hour = (
         dt_utc.hour
@@ -1297,7 +1620,9 @@ def planet_positions(
     dt_utc: datetime,
 ) -> Dict[str, float]:
 
-    jd = get_julian_day(dt_utc)
+    jd = get_julian_day(
+        dt_utc
+    )
 
     result = {}
 
@@ -1319,6 +1644,7 @@ def get_natal_blueprint(
     birth_utc: datetime,
     lat: float,
     lon: float,
+    lang: str = "ru",
 ) -> Dict[str, Any]:
 
     jd = get_julian_day(
@@ -1357,41 +1683,65 @@ def get_natal_blueprint(
         mc = 0.0
 
     return {
-        "Sun": deg_to_sign(pos["Sun"]),
-        "Moon": deg_to_sign(pos["Moon"]),
-        "Ascendant": deg_to_sign(asc),
-        "MC": deg_to_sign(mc),
+
+        "Sun": deg_to_sign(
+            pos["Sun"],
+            lang,
+        ),
+
+        "Moon": deg_to_sign(
+            pos["Moon"],
+            lang,
+        ),
+
+        "Ascendant": deg_to_sign(
+            asc,
+            lang,
+        ),
+
+        "MC": deg_to_sign(
+            mc,
+            lang,
+        ),
 
         "Mercury": deg_to_sign(
-            pos["Mercury"]
+            pos["Mercury"],
+            lang,
         ),
 
         "Venus": deg_to_sign(
-            pos["Venus"]
+            pos["Venus"],
+            lang,
         ),
 
         "Mars": deg_to_sign(
-            pos["Mars"]
+            pos["Mars"],
+            lang,
         ),
 
         "Jupiter": deg_to_sign(
-            pos["Jupiter"]
+            pos["Jupiter"],
+            lang,
         ),
 
         "Saturn": deg_to_sign(
-            pos["Saturn"]
+            pos["Saturn"],
+            lang,
         ),
 
         "Uranus": deg_to_sign(
-            pos["Uranus"]
+            pos["Uranus"],
+            lang,
         ),
 
         "Neptune": deg_to_sign(
-            pos["Neptune"]
+            pos["Neptune"],
+            lang,
         ),
 
         "Pluto": deg_to_sign(
-            pos["Pluto"]
+            pos["Pluto"],
+            lang,
         ),
     }
 
@@ -1411,7 +1761,8 @@ def find_transits(
     )
 
     previous = planet_positions(
-        target_utc - timedelta(days=1)
+        target_utc
+        - timedelta(days=1)
     )
 
     found = []
@@ -1466,7 +1817,8 @@ def find_transits(
                     )
 
                     previous_orb = abs(
-                        previous_diff - angle
+                        previous_diff
+                        - angle
                     )
 
                     motion = (
@@ -1516,7 +1868,9 @@ def find_transits(
         )
     )
 
-    return found[:max_results]
+    return found[
+        :max_results
+    ]
 
 
 def format_transits(
@@ -1545,6 +1899,121 @@ def format_transits(
 
 
 # ============================================================
+# PERSONALIZED FALLBACK
+# ============================================================
+
+def build_personal_fallback(
+    name: str,
+    bp: Dict[str, str],
+    lang: str,
+) -> str:
+
+    sun = bp.get(
+        "Sun",
+        "—",
+    )
+
+    moon = bp.get(
+        "Moon",
+        "—",
+    )
+
+    asc = bp.get(
+        "Ascendant",
+        "—",
+    )
+
+    mercury = bp.get(
+        "Mercury",
+        "—",
+    )
+
+    mars = bp.get(
+        "Mars",
+        "—",
+    )
+
+    if lang == "ru":
+
+        return (
+            f"🧠 АРХИТЕКТУРА ЛИЧНОСТИ\n\n"
+            f"У {name} Солнце находится в {sun}, "
+            f"а Луна — в {moon}. В психологической "
+            f"интерпретации это сочетание показывает "
+            f"разницу между тем, как человек хочет "
+            f"проявлять себя, и тем, что ему необходимо "
+            f"для внутреннего ощущения устойчивости. "
+            f"Главная задача — не выбирать между "
+            f"самовыражением и эмоциональным комфортом, "
+            f"а научиться использовать оба ресурса вместе.\n\n"
+
+            f"🌅 ВНЕШНЕЕ ПРОЯВЛЕНИЕ\n\n"
+            f"Асцендент в {asc} описывает стиль, "
+            f"с которым человек входит в новые ситуации. "
+            f"Это может влиять на первое впечатление, "
+            f"манеру реагировать и способ показывать "
+            f"себя окружающим. Важно помнить, что "
+            f"Асцендент показывает способ проявления, "
+            f"а не фиксирует характер человека целиком.\n\n"
+
+            f"⚡ МЫШЛЕНИЕ И ДЕЙСТВИЯ\n\n"
+            f"Меркурий в {mercury} показывает привычный "
+            f"способ обрабатывать информацию и выражать "
+            f"мысли, а Марс в {mars} — способ превращать "
+            f"решение в действие. Сильная сторона такого "
+            f"сочетания раскрывается тогда, когда ясная "
+            f"мысль получает конкретное направление.\n\n"
+
+            f"💎 ГЛАВНАЯ СИЛА\n\n"
+            f"В этой карте особенно важно соединять "
+            f"самопонимание с действием. Чем лучше "
+            f"{name} замечает собственные реакции, "
+            f"тем точнее может выбирать момент для "
+            f"решения и последовательного движения вперёд.\n\n"
+
+            f"🎯 ГЛАВНЫЙ ВЫВОД\n\n"
+            f"Натальная карта не задаёт готовый сценарий. "
+            f"Она помогает увидеть повторяющиеся "
+            f"психологические тенденции и использовать "
+            f"их более осознанно."
+        )
+
+    return (
+        f"🧠 PERSONALITY ARCHITECTURE\n\n"
+        f"{name}'s Sun is in {sun}, while the Moon "
+        f"is in {moon}. Psychologically, this highlights "
+        f"the relationship between conscious identity "
+        f"and emotional needs. The most useful approach "
+        f"is to let both sides of the personality work together.\n\n"
+
+        f"🌅 OUTER EXPRESSION\n\n"
+        f"The Ascendant in {asc} describes the style "
+        f"used when entering new situations and the kind "
+        f"of first impression naturally created. It is "
+        f"a mode of expression rather than a complete "
+        f"description of personality.\n\n"
+
+        f"⚡ THINKING AND ACTION\n\n"
+        f"Mercury in {mercury} describes information "
+        f"processing and communication, while Mars in "
+        f"{mars} describes the way motivation becomes action. "
+        f"The strongest result comes from giving clear "
+        f"thinking a concrete direction.\n\n"
+
+        f"💎 CORE STRENGTH\n\n"
+        f"This chart benefits from combining self-awareness "
+        f"with deliberate action. The more clearly {name} "
+        f"recognizes personal reactions, the easier it becomes "
+        f"to make precise decisions and move forward consistently.\n\n"
+
+        f"🎯 MAIN TAKEAWAY\n\n"
+        f"A natal chart does not define a fixed future. "
+        f"It can be used to recognize recurring psychological "
+        f"patterns and work with them more consciously."
+    )
+
+
+# ============================================================
 # GEMINI ENGINE
 # ============================================================
 
@@ -1552,8 +2021,8 @@ SYSTEM_PROMPT = """
 You are Aura Astro, an elite psychological astrologer,
 self-awareness mentor, and reflective guide.
 
-Your task is to interpret astrology as a psychological
-reflection tool, not as deterministic fortune-telling.
+Astrology must be presented as a symbolic psychological
+reflection tool, never as deterministic fortune-telling.
 
 CORE RULES:
 
@@ -1561,22 +2030,32 @@ CORE RULES:
 2. Never claim that something is guaranteed to happen.
 3. Never say that a person is doomed, cursed, or destined.
 4. Never make medical, legal, or financial guarantees.
-5. Do not use generic horoscope clichés.
-6. Connect astrology with real psychological patterns,
-   behavior, communication, motivation, boundaries,
-   attention, and decision-making.
-7. Give practical recommendations.
-8. Be specific to the supplied chart.
-9. Never invent planetary positions.
-10. Use only the planetary positions and transits supplied
-    in the prompt.
-11. If birth time is uncertain, avoid overconfidence about
-    Ascendant and MC.
-12. Every sentence must be complete and properly punctuated.
-13. Never leave unfinished sentences.
-14. Never switch language inside the answer.
-15. Do not mention that you are an AI unless directly asked.
-16. Do not repeat the entire chart unnecessarily.
+5. Never use generic horoscope clichés.
+6. Always connect the interpretation to the ACTUAL
+   planetary placements supplied by the user.
+7. Combine placements instead of interpreting them
+   as isolated zodiac-sign descriptions.
+8. Focus on personality, emotions, communication,
+   motivation, boundaries, behavior and decision-making.
+9. Give practical and psychologically useful insights.
+10. Never invent planetary positions.
+11. Never invent houses that were not supplied.
+12. Do not claim exact life events from astrology.
+13. If birth time is uncertain, avoid overconfidence
+    about Ascendant and MC.
+14. Every sentence must be complete and properly punctuated.
+15. Never leave unfinished sentences.
+16. Never switch language inside the answer.
+17. Do not mention that you are an AI unless directly asked.
+18. Do not repeat the entire chart unnecessarily.
+19. Avoid empty phrases such as:
+    "This is a time to trust yourself",
+    "the universe is guiding you",
+    "something unexpected may happen",
+    unless they are directly supported by a specific
+    psychological interpretation.
+20. The answer must feel written for THIS person,
+    not copied from a generic horoscope.
 """
 
 
@@ -1586,7 +2065,9 @@ async def call_gemini_safe(
     max_tokens: int = 2000,
 ) -> str:
 
-    lang = normalize_lang(lang)
+    lang = normalize_lang(
+        lang
+    )
 
     lang_name = (
         "Russian"
@@ -1597,8 +2078,13 @@ async def call_gemini_safe(
     lang_rule = f"""
 
 CRITICAL LANGUAGE RULE:
+
 Respond entirely and naturally in {lang_name}.
+
 Do not switch languages.
+
+Do not translate planetary placement data incorrectly.
+Use the exact placements supplied in the prompt.
 """
 
     full_prompt = (
@@ -1606,7 +2092,15 @@ Do not switch languages.
         + lang_rule
     )
 
-    for model_candidate in MODELS_CHAIN:
+    # Убираем возможные дубликаты моделей.
+    models = []
+
+    for model in MODELS_CHAIN:
+
+        if model not in models:
+            models.append(model)
+
+    for model_candidate in models:
 
         try:
 
@@ -1625,7 +2119,18 @@ Do not switch languages.
             ).strip()
 
             if text:
+
+                print(
+                    f"[Gemini OK] model={model_candidate}",
+                    flush=True,
+                )
+
                 return text
+
+            print(
+                f"[Gemini Empty] model={model_candidate}",
+                flush=True,
+            )
 
         except Exception as e:
 
@@ -1638,24 +2143,69 @@ Do not switch languages.
 
             continue
 
+    # ВАЖНО:
+    # Здесь больше НЕТ старого универсального ответа.
+    # Если Gemini недоступен, возвращаем персональный текст.
+    fallback_name = (
+        prompt.split(
+            "Client name:",
+            1
+        )[-1]
+        .split(
+            "\n",
+            1
+        )[0]
+        .strip()
+        if "Client name:" in prompt
+        else "Client"
+    )
+
+    fallback_bp = {}
+
+    for key in PLACEMENT_KEYS:
+
+        marker = f"- {key}:"
+
+        if marker in prompt:
+
+            try:
+
+                value = (
+                    prompt
+                    .split(
+                        marker,
+                        1
+                    )[1]
+                    .split(
+                        "\n",
+                        1
+                    )[0]
+                    .strip()
+                )
+
+                fallback_bp[key] = value
+
+            except Exception:
+                pass
+
+    if fallback_bp:
+
+        return build_personal_fallback(
+            fallback_name,
+            fallback_bp,
+            lang,
+        )
+
     if lang == "ru":
 
         return (
-            "Ваша натальная карта — это "
-            "инструмент для самонаблюдения, "
-            "а не фиксированный сценарий будущего.\n\n"
-            "Сегодня полезно обратить внимание "
-            "на свои реакции, качество общения "
-            "и один конкретный шаг к важной цели."
+            "Не удалось получить AI-разбор прямо сейчас. "
+            "Попробуйте открыть карту ещё раз через несколько секунд."
         )
 
     return (
-        "Your natal chart is best used as a "
-        "tool for self-reflection rather than "
-        "a fixed script for the future.\n\n"
-        "Today, notice your reactions, "
-        "communication patterns, and one "
-        "concrete step toward an important goal."
+        "The AI interpretation is temporarily unavailable. "
+        "Please open your chart again in a few seconds."
     )
 
 
@@ -1681,46 +2231,84 @@ Client name:
 Natal placements:
 {chart_data}
 
-Create a deep psychological interpretation
-of this person's natal chart.
+Create a deeply PERSONAL psychological interpretation
+of this exact natal chart.
+
+Do not write a generic horoscope.
+
+Use the actual combinations between the placements.
 
 Length:
-approximately 300 words.
+approximately 350–450 words.
 
-Structure exactly into 4 sections.
+Structure exactly into these sections:
 
-1. ARCHITECTURE OF PERSONALITY
-Analyze the relationship between Sun and Moon.
-Explain conscious identity versus emotional needs.
+🧠 АРХИТЕКТУРА ЛИЧНОСТИ
 
-2. OUTER EXPRESSION
-Analyze the Ascendant.
-Explain first impressions, social behavior,
-and how the person naturally enters situations.
+Analyze Sun + Moon together.
+Explain the relationship between conscious identity,
+will, emotional needs and inner security.
+Describe at least one possible internal tension
+and one psychological resource.
 
-3. ACTION AND THINKING
-Analyze Mars and Mercury.
-Explain decision-making, communication,
-assertiveness, motivation, and conflict style.
+🌅 ВНЕШНЕЕ ПРОЯВЛЕНИЕ
 
-4. UNIQUE SUPERPOWER
+Analyze the Ascendant together with the Sun.
+Explain first impression, social behavior,
+natural way of entering situations and how
+inner personality may differ from outer presentation.
+
+⚡ МЫШЛЕНИЕ И ДЕЙСТВИЯ
+
+Analyze Mercury + Mars together.
+Explain thinking style, communication,
+decision-making, motivation, assertiveness,
+conflict behavior and how ideas become actions.
+
+❤️ ОТНОШЕНИЯ
+
+Use Venus + Moon + Mars.
+Explain attraction, emotional closeness,
+personal boundaries, communication of needs
+and what the person may value in relationships.
+
+💎 ГЛАВНАЯ СИЛА
+
 Identify ONE distinctive psychological strength
-that emerges from the chart.
-Explain why it is useful and how the person
-can consciously develop it.
+that emerges from the combination of several
+placements in this exact chart.
 
-Important:
-Do not simply describe zodiac signs.
-Connect placements together.
-Do not make deterministic predictions.
-Make the reading feel personal and specific.
-Complete every sentence.
+Explain why it is distinctive and give one
+concrete way to develop it.
+
+🎯 ГЛАВНЫЙ ВЫВОД
+
+Finish with a concise personal conclusion
+about the central psychological pattern
+of this chart.
+
+IMPORTANT:
+
+Do not simply say "Sun in X means..."
+and "Moon in Y means...".
+
+Connect placements.
+
+Do not invent houses.
+
+Do not predict exact events.
+
+Do not use generic motivational clichés.
+
+Do not mention that this is a generated response.
+
+Every sentence must be complete.
 """
 
     return await call_gemini_safe(
         prompt,
         lang,
-        2400,
+        3000,
     )
 
 
@@ -1757,35 +2345,47 @@ Important current transits:
 Create a personalized daily psychological
 astrology forecast.
 
+The forecast must be based on the supplied
+natal chart and the supplied transits.
+
 Length:
-approximately 220 words.
+approximately 220–280 words.
 
 Structure exactly:
 
-DAILY THEME
+🔮 ТЕМА ДНЯ
+
 One clear meaningful title.
 
-PSYCHOLOGICAL CLIMATE
-Two complete sentences describing the
-likely psychological atmosphere and
-attention patterns.
+🧠 ПСИХОЛОГИЧЕСКИЙ ФОН
 
-RELATIONSHIPS
+Two or three complete sentences describing
+the psychological atmosphere and attention patterns.
+
+❤️ ОТНОШЕНИЯ
+
 One or two sentences about communication,
-boundaries, emotional reactions, or intimacy.
+boundaries, emotional reactions or intimacy.
 
-TACTICAL DIRECTIVES
+⚡ ТАКТИЧЕСКИЕ ДЕЙСТВИЯ
+
 Exactly two bullet points.
 Each must be practical and actionable today.
 
-REFLECTIVE INQUIRY
-One thoughtful question for self-reflection.
+🎯 ВОПРОС ДЛЯ СЕБЯ
+
+One thoughtful question.
 
 Do not predict specific events.
+
 Do not use fear.
+
 Do not say "something unexpected will happen".
-Focus on choices, patterns, attention,
-communication, and behavior.
+
+Do not write a generic horoscope.
+
+Connect the forecast to actual placements
+and transits supplied above.
 
 Complete every sentence.
 """
@@ -1793,7 +2393,7 @@ Complete every sentence.
     return await call_gemini_safe(
         prompt,
         lang,
-        2200,
+        2400,
     )
 
 
@@ -1833,32 +2433,35 @@ Natal chart:
 Current transits:
 {format_transits(transits)}
 
-Answer the client's question as a
-psychological astrology mentor.
+Answer the client's actual question as
+a psychological astrology mentor.
 
 Length:
-approximately 220 words.
+approximately 220–280 words.
 
 Requirements:
 
-1. Directly address the actual question.
+1. Directly answer the actual question.
 2. Connect the answer to one or two
    relevant natal placements.
-3. If transits are relevant, explain
-   how they may symbolically highlight
-   the psychological theme.
-4. Give exactly two practical action steps.
-5. Do not make deterministic predictions.
-6. Do not scare the client.
-7. Do not simply repeat their question.
-8. Do not invent chart information.
-9. Complete every sentence.
+3. Explain the psychological mechanism,
+   not just the zodiac sign.
+4. If a transit is relevant, explain how
+   it may symbolically highlight the theme.
+5. Give exactly two practical action steps.
+6. Do not make deterministic predictions.
+7. Do not scare the client.
+8. Do not simply repeat the question.
+9. Do not invent chart information.
+10. Do not invent houses.
+11. Complete every sentence.
+12. Make the answer feel personal.
 """
 
     return await call_gemini_safe(
         prompt,
         lang,
-        2200,
+        2400,
     )
 
 
@@ -1894,6 +2497,7 @@ def get_status_str(
 ) -> str:
 
     if not access["has_access"]:
+
         return t(
             "status_exp",
             lang,
@@ -1967,7 +2571,6 @@ async def send_long_message(
                     current
                 )
 
-            # Если отдельный абзац слишком длинный.
             if len(paragraph) > 3800:
 
                 for i in range(
@@ -1975,6 +2578,7 @@ async def send_long_message(
                     len(paragraph),
                     3700,
                 ):
+
                     parts.append(
                         paragraph[
                             i:i + 3700
@@ -1988,7 +2592,9 @@ async def send_long_message(
                 current = paragraph
 
     if current:
-        parts.append(current)
+        parts.append(
+            current
+        )
 
     for index, part in enumerate(parts):
 
@@ -2013,8 +2619,11 @@ async def safe_delete_message(
         return
 
     try:
+
         await message.delete()
+
     except Exception:
+
         pass
 
 
@@ -2039,7 +2648,9 @@ class AskChartState(StatesGroup):
 # /START
 # ============================================================
 
-@dp.message(CommandStart())
+@dp.message(
+    CommandStart()
+)
 async def cmd_start(
     message: types.Message,
     state: FSMContext,
@@ -2109,7 +2720,9 @@ async def cmd_start(
 # REGISTRATION — NAME
 # ============================================================
 
-@dp.message(Registration.name)
+@dp.message(
+    Registration.name
+)
 async def process_name(
     message: types.Message,
     state: FSMContext,
@@ -2154,7 +2767,9 @@ async def process_name(
 # REGISTRATION — DATE
 # ============================================================
 
-@dp.message(Registration.birth_date)
+@dp.message(
+    Registration.birth_date
+)
 async def process_date(
     message: types.Message,
     state: FSMContext,
@@ -2220,7 +2835,9 @@ async def process_date(
 # REGISTRATION — TIME
 # ============================================================
 
-@dp.message(Registration.birth_time)
+@dp.message(
+    Registration.birth_time
+)
 async def process_time(
     message: types.Message,
     state: FSMContext,
@@ -2241,23 +2858,20 @@ async def process_time(
 
     try:
 
-        parsed_time = time.fromisoformat(
-            value
-        )
-
-        # Разрешаем только HH:MM или HH:MM:SS.
         if len(value) == 5:
+
             normalized_time = (
                 value + ":00"
             )
 
         elif len(value) == 8:
+
             normalized_time = value
 
         else:
+
             raise ValueError
 
-        # Проверяем, что секунды тоже корректны.
         parsed_time = time.fromisoformat(
             normalized_time
         )
@@ -2297,7 +2911,9 @@ async def process_time(
 # REGISTRATION — CITY
 # ============================================================
 
-@dp.message(Registration.birth_city)
+@dp.message(
+    Registration.birth_city
+)
 async def process_city(
     message: types.Message,
     state: FSMContext,
@@ -2416,6 +3032,7 @@ async def process_city(
             birth_utc,
             lat,
             lon,
+            lang,
         )
 
         analysis = await generate_blueprint_text(
@@ -2589,6 +3206,7 @@ async def cb_chart(
             birth_utc,
             float(user["lat"]),
             float(user["lon"]),
+            lang,
         )
 
         analysis = await generate_blueprint_text(
@@ -2709,7 +3327,9 @@ async def cb_forecast(
         user_tz = UTC
 
     local_date = (
-        datetime.now(UTC)
+        datetime.now(
+            UTC
+        )
         .astimezone(user_tz)
         .date()
     )
@@ -2751,6 +3371,7 @@ async def cb_forecast(
             birth_utc,
             float(user["lat"]),
             float(user["lon"]),
+            lang,
         )
 
         transits = find_transits(
@@ -2960,11 +3581,14 @@ async def process_question(
             birth_utc,
             float(user["lat"]),
             float(user["lon"]),
+            lang,
         )
 
         transits = find_transits(
             birth_utc,
-            datetime.now(UTC),
+            datetime.now(
+                UTC
+            ),
         )
 
         answer = await generate_chart_answer(
@@ -3074,10 +3698,9 @@ async def cb_topics(
             "title_ru": "❤️ ОТНОШЕНИЯ И БЛИЗОСТЬ",
             "title_en": "❤️ RELATIONSHIPS & INTIMACY",
             "focus": (
-                "Venus, Moon, Mars, "
-                "emotional intimacy, attraction, "
-                "attachment patterns, communication, "
-                "boundaries and conflict resolution."
+                "Venus, Moon, Mars, emotional intimacy, "
+                "attraction, attachment patterns, "
+                "communication, boundaries and conflict resolution."
             ),
         },
 
@@ -3085,10 +3708,9 @@ async def cb_topics(
             "title_ru": "💼 КАРЬЕРА И ПРИЗВАНИЕ",
             "title_en": "💼 CAREER & VOCATION",
             "focus": (
-                "MC, Saturn, Mars, Sun, "
-                "professional ambition, leadership, "
-                "discipline, motivation, "
-                "work identity and strategic career choices."
+                "MC, Saturn, Mars, Sun, professional ambition, "
+                "leadership, discipline, motivation, work identity "
+                "and strategic career choices."
             ),
         },
 
@@ -3096,9 +3718,8 @@ async def cb_topics(
             "title_ru": "💰 ФИНАНСЫ И РЕСУРСЫ",
             "title_en": "💰 MONEY & RESOURCES",
             "focus": (
-                "Jupiter, Venus, Saturn, "
-                "resource management, spending habits, "
-                "risk perception, self-worth, "
+                "Jupiter, Venus, Saturn, resource management, "
+                "spending habits, risk perception, self-worth, "
                 "financial discipline and long-term strategy."
             ),
         },
@@ -3125,11 +3746,14 @@ async def cb_topics(
             birth_utc,
             float(user["lat"]),
             float(user["lon"]),
+            lang,
         )
 
         transits = find_transits(
             birth_utc,
-            datetime.now(UTC),
+            datetime.now(
+                UTC
+            ),
         )
 
         chart_data = "\n".join(
@@ -3150,29 +3774,28 @@ Natal chart:
 Current transits:
 {format_transits(transits)}
 
-Create a deep psychological and strategic
-astrology reading focused strictly on the
-selected domain.
+Create a deep, personal psychological and strategic
+astrology reading focused strictly on the selected domain.
 
 Length:
-approximately 250 words.
+approximately 250–300 words.
 
 Structure exactly:
 
 1. CORE PATTERN
-Explain the person's natural psychological
-pattern in this area.
+Explain the person's natural psychological pattern
+in this area using specific placements.
 
 2. CURRENT MOMENTUM
-Explain which current transits symbolically
+Explain which supplied transits symbolically
 highlight the theme.
 
 3. TACTICAL RECOMMENDATIONS
 Give exactly two practical recommendations.
 
 Do not make deterministic predictions.
-Do not invent houses that were not provided.
-Do not use clichés.
+Do not invent houses.
+Do not use generic horoscope clichés.
 Do not give guarantees.
 Complete every sentence.
 """
@@ -3180,7 +3803,7 @@ Complete every sentence.
         reading = await call_gemini_safe(
             prompt,
             lang,
-            2200,
+            2400,
         )
 
     except Exception as e:
@@ -3245,7 +3868,6 @@ async def cb_sub(
     )
 
     if not user:
-
         return
 
     lang = normalize_lang(
@@ -3259,12 +3881,41 @@ async def cb_sub(
         cb.from_user.id
     )
 
+    if access["status"] == "premium":
+
+        status_text = t(
+            "status_prem",
+            lang,
+        )
+
+    elif access["status"] == "trial":
+
+        status_text = t(
+            "status_trial",
+            lang,
+        )
+
+    else:
+
+        status_text = t(
+            "status_exp",
+            lang,
+        )
+
+    days_text = (
+        t(
+            "days_left",
+            lang,
+            days=access["days_left"],
+        )
+        if access["has_access"]
+        else ""
+    )
+
     txt = (
         f"{t('subscription_title', lang)}\n\n"
-        f"{t('status_prem', lang) if access['status'] == 'premium' else t('status_trial', lang) if access['status'] == 'trial' else t('status_exp', lang)}"
-        f"\n"
-        f"{t('days_left', lang, days=access['days_left']) if access['has_access'] else ''}"
-        f"\n\n"
+        f"{status_text}\n"
+        f"{days_text}\n\n"
         f"{t('subscription_choose', lang)}"
     )
 
@@ -3409,7 +4060,6 @@ async def process_success(
         else "en"
     )
 
-    # Защита от повторного Telegram update.
     if not inserted:
 
         await message.answer(
@@ -3449,7 +4099,9 @@ async def send_daily_cycle():
 
     users = await get_active_users()
 
-    now_utc = datetime.now(UTC)
+    now_utc = datetime.now(
+        UTC
+    )
 
     for user in users:
 
@@ -3458,17 +4110,21 @@ async def send_daily_cycle():
         try:
 
             try:
+
                 tz = ZoneInfo(
                     user["timezone"]
                 )
+
             except Exception:
+
                 tz = UTC
 
             local_now = (
-                now_utc.astimezone(tz)
+                now_utc.astimezone(
+                    tz
+                )
             )
 
-            # Отправляем в 20:00.
             if local_now.hour != 20:
                 continue
 
@@ -3500,8 +4156,6 @@ async def send_daily_cycle():
 
             if not access["has_access"]:
 
-                # Чтобы не спамить paywall
-                # каждый час при проблемах с cron.
                 await bot.send_message(
                     user_id,
                     t(
@@ -3513,7 +4167,6 @@ async def send_daily_cycle():
                     ),
                 )
 
-                # Считаем этот день обработанным.
                 await mark_forecast_sent(
                     user_id,
                     forecast_key,
@@ -3542,6 +4195,7 @@ async def send_daily_cycle():
                 birth_utc,
                 float(user["lat"]),
                 float(user["lon"]),
+                lang,
             )
 
             transits = find_transits(
@@ -3564,7 +4218,9 @@ async def send_daily_cycle():
 
             message_text = (
                 f"{title}\n"
-                f"📅 {forecast_date.strftime('%d.%m.%Y')}\n\n"
+                f"📅 "
+                f"{forecast_date.strftime('%d.%m.%Y')}"
+                f"\n\n"
                 f"{reading}\n\n"
                 f"⏳ "
                 f"{get_status_str(access, lang)}"
@@ -3630,7 +4286,7 @@ async def health_check(
 ):
 
     return web.Response(
-        text="Aura Astro v3.0 Online",
+        text="Aura Astro v4.0 Online",
         status=200,
     )
 
@@ -3695,7 +4351,7 @@ async def main():
     )
 
     print(
-        "🚀 Aura Astro v3.0 is running.",
+        "🚀 Aura Astro v4.0 is running.",
         flush=True,
     )
 
