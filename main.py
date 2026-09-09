@@ -55,8 +55,8 @@ if not DATABASE_URL:
 # GEMINI
 # ============================================================
 
-# Актуальная основная модель.
-# Можно переопределить через GEMINI_MODEL.
+# РђРєС‚СѓР°Р»СЊРЅР°СЏ РѕСЃРЅРѕРІРЅР°СЏ РјРѕРґРµР»СЊ.
+# РњРѕР¶РЅРѕ РїРµСЂРµРѕРїСЂРµРґРµР»РёС‚СЊ С‡РµСЂРµР· GEMINI_MODEL.
 DEFAULT_GEMINI_MODEL = os.getenv(
 
   "GEMINI_MODEL",
@@ -105,217 +105,217 @@ TEXTS = {
     "ru": {
 
         "welcome_back": (
-            "✨ С возвращением, {name}!\n\n"
-            "Статус: {status}\n\n"
-            "Что хотите изучить?"
+            "вњЁ РЎ РІРѕР·РІСЂР°С‰РµРЅРёРµРј, {name}!\n\n"
+            "РЎС‚Р°С‚СѓСЃ: {status}\n\n"
+            "Р§С‚Рѕ С…РѕС‚РёС‚Рµ РёР·СѓС‡РёС‚СЊ?"
         ),
 
         "start_intro": (
-            "✨ Добро пожаловать в Aura Astro.\n\n"
-            "Ваш персональный астрологический проводник "
-            "объединяет точные расчёты Swiss Ephemeris "
-            "и глубокую психологическую интерпретацию.\n\n"
-            "Давайте построим вашу натальную карту.\n\n"
-            "Как к вам обращаться?"
+            "вњЁ Р”РѕР±СЂРѕ РїРѕР¶Р°Р»РѕРІР°С‚СЊ РІ Aura Astro.\n\n"
+            "Р’Р°С€ РїРµСЂСЃРѕРЅР°Р»СЊРЅС‹Р№ Р°СЃС‚СЂРѕР»РѕРіРёС‡РµСЃРєРёР№ РїСЂРѕРІРѕРґРЅРёРє "
+            "РѕР±СЉРµРґРёРЅСЏРµС‚ С‚РѕС‡РЅС‹Рµ СЂР°СЃС‡С‘С‚С‹ Swiss Ephemeris "
+            "Рё РіР»СѓР±РѕРєСѓСЋ РїСЃРёС…РѕР»РѕРіРёС‡РµСЃРєСѓСЋ РёРЅС‚РµСЂРїСЂРµС‚Р°С†РёСЋ.\n\n"
+            "Р”Р°РІР°Р№С‚Рµ РїРѕСЃС‚СЂРѕРёРј РІР°С€Сѓ РЅР°С‚Р°Р»СЊРЅСѓСЋ РєР°СЂС‚Сѓ.\n\n"
+            "РљР°Рє Рє РІР°Рј РѕР±СЂР°С‰Р°С‚СЊСЃСЏ?"
         ),
 
         "ask_birth_date": (
-            "Укажите вашу дату рождения в формате "
-            "`ГГГГ-ММ-ДД`.\n\n"
-            "Например: `1994-08-23`"
+            "РЈРєР°Р¶РёС‚Рµ РІР°С€Сѓ РґР°С‚Сѓ СЂРѕР¶РґРµРЅРёСЏ РІ С„РѕСЂРјР°С‚Рµ "
+            "`Р“Р“Р“Р“-РњРњ-Р”Р”`.\n\n"
+            "РќР°РїСЂРёРјРµСЂ: `1994-08-23`"
         ),
 
         "invalid_date": (
-            "⚠️ Неверный формат даты.\n\n"
-            "Используйте `ГГГГ-ММ-ДД`.\n"
-            "Например: `1995-11-04`."
+            "вљ пёЏ РќРµРІРµСЂРЅС‹Р№ С„РѕСЂРјР°С‚ РґР°С‚С‹.\n\n"
+            "РСЃРїРѕР»СЊР·СѓР№С‚Рµ `Р“Р“Р“Р“-РњРњ-Р”Р”`.\n"
+            "РќР°РїСЂРёРјРµСЂ: `1995-11-04`."
         ),
 
         "ask_birth_time": (
-            "В какое время вы родились?\n\n"
-            "Используйте 24-часовой формат `ЧЧ:ММ`.\n"
-            "Например: `14:30`.\n\n"
-            "Если точное время неизвестно, напишите `12:00`."
+            "Р’ РєР°РєРѕРµ РІСЂРµРјСЏ РІС‹ СЂРѕРґРёР»РёСЃСЊ?\n\n"
+            "РСЃРїРѕР»СЊР·СѓР№С‚Рµ 24-С‡Р°СЃРѕРІРѕР№ С„РѕСЂРјР°С‚ `Р§Р§:РњРњ`.\n"
+            "РќР°РїСЂРёРјРµСЂ: `14:30`.\n\n"
+            "Р•СЃР»Рё С‚РѕС‡РЅРѕРµ РІСЂРµРјСЏ РЅРµРёР·РІРµСЃС‚РЅРѕ, РЅР°РїРёС€РёС‚Рµ `12:00`."
         ),
 
         "invalid_time": (
-            "⚠️ Неверный формат времени.\n\n"
-            "Введите время в формате `ЧЧ:ММ`.\n"
-            "Например: `08:45`."
+            "вљ пёЏ РќРµРІРµСЂРЅС‹Р№ С„РѕСЂРјР°С‚ РІСЂРµРјРµРЅРё.\n\n"
+            "Р’РІРµРґРёС‚Рµ РІСЂРµРјСЏ РІ С„РѕСЂРјР°С‚Рµ `Р§Р§:РњРњ`.\n"
+            "РќР°РїСЂРёРјРµСЂ: `08:45`."
         ),
 
         "ask_city": (
-            "Где вы родились?\n\n"
-            "Укажите город и страну.\n"
-            "Например: `Москва, Россия` или `Минск, Беларусь`."
+            "Р“РґРµ РІС‹ СЂРѕРґРёР»РёСЃСЊ?\n\n"
+            "РЈРєР°Р¶РёС‚Рµ РіРѕСЂРѕРґ Рё СЃС‚СЂР°РЅСѓ.\n"
+            "РќР°РїСЂРёРјРµСЂ: `РњРѕСЃРєРІР°, Р РѕСЃСЃРёСЏ` РёР»Рё `РњРёРЅСЃРє, Р‘РµР»Р°СЂСѓСЃСЊ`."
         ),
 
         "calc_coords": (
-            "🔭 Рассчитываю координаты и натальную карту..."
+            "рџ”­ Р Р°СЃСЃС‡РёС‚С‹РІР°СЋ РєРѕРѕСЂРґРёРЅР°С‚С‹ Рё РЅР°С‚Р°Р»СЊРЅСѓСЋ РєР°СЂС‚Сѓ..."
         ),
 
         "city_not_found": (
-            "⚠️ Город не найден.\n\n"
-            "Попробуйте написать точнее: `Город, Страна`."
+            "вљ пёЏ Р“РѕСЂРѕРґ РЅРµ РЅР°Р№РґРµРЅ.\n\n"
+            "РџРѕРїСЂРѕР±СѓР№С‚Рµ РЅР°РїРёСЃР°С‚СЊ С‚РѕС‡РЅРµРµ: `Р“РѕСЂРѕРґ, РЎС‚СЂР°РЅР°`."
         ),
 
         "tz_error": (
-            "⚠️ Не удалось определить исторический часовой пояс.\n\n"
-            "Попробуйте указать ближайший крупный город."
+            "вљ пёЏ РќРµ СѓРґР°Р»РѕСЃСЊ РѕРїСЂРµРґРµР»РёС‚СЊ РёСЃС‚РѕСЂРёС‡РµСЃРєРёР№ С‡Р°СЃРѕРІРѕР№ РїРѕСЏСЃ.\n\n"
+            "РџРѕРїСЂРѕР±СѓР№С‚Рµ СѓРєР°Р·Р°С‚СЊ Р±Р»РёР¶Р°Р№С€РёР№ РєСЂСѓРїРЅС‹Р№ РіРѕСЂРѕРґ."
         ),
 
         "calc_error": (
-            "⚠️ Произошла ошибка при расчёте карты.\n\n"
-            "Пожалуйста, попробуйте ещё раз."
+            "вљ пёЏ РџСЂРѕРёР·РѕС€Р»Р° РѕС€РёР±РєР° РїСЂРё СЂР°СЃС‡С‘С‚Рµ РєР°СЂС‚С‹.\n\n"
+            "РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РїРѕРїСЂРѕР±СѓР№С‚Рµ РµС‰С‘ СЂР°Р·."
         ),
 
         "trial_activated": (
-            "━━━━━━━━━━━━━━━━━━━━\n"
-            "🎁 Полный доступ активирован на 7 дней.\n\n"
-            "Ежедневный прогноз будет приходить "
-            "в 20:00 по местному времени."
+            "в”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓ\n"
+            "рџЋЃ РџРѕР»РЅС‹Р№ РґРѕСЃС‚СѓРї Р°РєС‚РёРІРёСЂРѕРІР°РЅ РЅР° 7 РґРЅРµР№.\n\n"
+            "Р•Р¶РµРґРЅРµРІРЅС‹Р№ РїСЂРѕРіРЅРѕР· Р±СѓРґРµС‚ РїСЂРёС…РѕРґРёС‚СЊ "
+            "РІ 20:00 РїРѕ РјРµСЃС‚РЅРѕРјСѓ РІСЂРµРјРµРЅРё."
         ),
 
-        "btn_chart": "🌌 Моя карта",
-        "btn_forecast": "🔮 Прогноз на сегодня",
-        "btn_tomorrow": "🌙 Завтра",
-        "btn_ask": "💬 Спросить карту",
-        "btn_rel": "❤️ Отношения",
-        "btn_career": "💼 Карьера",
-        "btn_money": "💰 Финансы",
-        "btn_sub": "⭐ Подписка",
-        "btn_menu": "⬅️ Главное меню",
+        "btn_chart": "рџЊЊ РњРѕСЏ РєР°СЂС‚Р°",
+        "btn_forecast": "рџ”® РџСЂРѕРіРЅРѕР· РЅР° СЃРµРіРѕРґРЅСЏ",
+        "btn_tomorrow": "рџЊ™ Р—Р°РІС‚СЂР°",
+        "btn_ask": "рџ’¬ РЎРїСЂРѕСЃРёС‚СЊ РєР°СЂС‚Сѓ",
+        "btn_rel": "вќ¤пёЏ РћС‚РЅРѕС€РµРЅРёСЏ",
+        "btn_career": "рџ’ј РљР°СЂСЊРµСЂР°",
+        "btn_money": "рџ’° Р¤РёРЅР°РЅСЃС‹",
+        "btn_sub": "в­ђ РџРѕРґРїРёСЃРєР°",
+        "btn_menu": "в¬…пёЏ Р“Р»Р°РІРЅРѕРµ РјРµРЅСЋ",
 
-        "status_trial": "Пробный период",
-        "status_prem": "Премиум",
-        "status_exp": "Истёк",
+        "status_trial": "РџСЂРѕР±РЅС‹Р№ РїРµСЂРёРѕРґ",
+        "status_prem": "РџСЂРµРјРёСѓРј",
+        "status_exp": "РСЃС‚С‘Рє",
 
-        "days_left": "осталось {days} дн.",
+        "days_left": "РѕСЃС‚Р°Р»РѕСЃСЊ {days} РґРЅ.",
 
         "limit_reached": (
-            "Вы исчерпали лимит запросов к карте на сегодня.\n\n"
-            "Возвращайтесь завтра."
+            "Р’С‹ РёСЃС‡РµСЂРїР°Р»Рё Р»РёРјРёС‚ Р·Р°РїСЂРѕСЃРѕРІ Рє РєР°СЂС‚Рµ РЅР° СЃРµРіРѕРґРЅСЏ.\n\n"
+            "Р’РѕР·РІСЂР°С‰Р°Р№С‚РµСЃСЊ Р·Р°РІС‚СЂР°."
         ),
 
         "paywall_msg": (
-            "🔒 Бесплатный доступ завершён.\n\n"
-            "Оформите подписку, чтобы продолжить получать "
-            "прогнозы и задавать вопросы натальной карте."
+            "рџ”’ Р‘РµСЃРїР»Р°С‚РЅС‹Р№ РґРѕСЃС‚СѓРї Р·Р°РІРµСЂС€С‘РЅ.\n\n"
+            "РћС„РѕСЂРјРёС‚Рµ РїРѕРґРїРёСЃРєСѓ, С‡С‚РѕР±С‹ РїСЂРѕРґРѕР»Р¶РёС‚СЊ РїРѕР»СѓС‡Р°С‚СЊ "
+            "РїСЂРѕРіРЅРѕР·С‹ Рё Р·Р°РґР°РІР°С‚СЊ РІРѕРїСЂРѕСЃС‹ РЅР°С‚Р°Р»СЊРЅРѕР№ РєР°СЂС‚Рµ."
         ),
 
         "ask_prompt": (
-            "💬 СПРОСИТЬ КАРТУ\n\n"
-            "Задайте один вопрос о себе, работе, отношениях "
-            "или важном выборе.\n\n"
-            "Например:\n"
-            "«В чём корень моих сомнений при смене работы?»"
+            "рџ’¬ РЎРџР РћРЎРРўР¬ РљРђР РўРЈ\n\n"
+            "Р—Р°РґР°Р№С‚Рµ РѕРґРёРЅ РІРѕРїСЂРѕСЃ Рѕ СЃРµР±Рµ, СЂР°Р±РѕС‚Рµ, РѕС‚РЅРѕС€РµРЅРёСЏС… "
+            "РёР»Рё РІР°Р¶РЅРѕРј РІС‹Р±РѕСЂРµ.\n\n"
+            "РќР°РїСЂРёРјРµСЂ:\n"
+            "В«Р’ С‡С‘Рј РєРѕСЂРµРЅСЊ РјРѕРёС… СЃРѕРјРЅРµРЅРёР№ РїСЂРё СЃРјРµРЅРµ СЂР°Р±РѕС‚С‹?В»"
         ),
 
         "analyzing": (
-            "🧠 Анализирую натальную карту и положение планет..."
+            "рџ§  РђРЅР°Р»РёР·РёСЂСѓСЋ РЅР°С‚Р°Р»СЊРЅСѓСЋ РєР°СЂС‚Сѓ Рё РїРѕР»РѕР¶РµРЅРёРµ РїР»Р°РЅРµС‚..."
         ),
 
-        "subscription_title": "⭐ AURA ASTRO — ПОДПИСКА",
+        "subscription_title": "в­ђ AURA ASTRO вЂ” РџРћР”РџРРЎРљРђ",
 
-        "subscription_choose": "Выберите план доступа:",
+        "subscription_choose": "Р’С‹Р±РµСЂРёС‚Рµ РїР»Р°РЅ РґРѕСЃС‚СѓРїР°:",
 
-        "plan_1m_btn": "⭐ 1 месяц — 199 Stars",
-        "plan_3m_btn": "✨ 3 месяца — 450 Stars",
-        "plan_6m_btn": "⚡ 6 месяцев — 800 Stars",
-        "plan_1y_btn": "👑 1 год — 1200 Stars",
+        "plan_1m_btn": "в­ђ 1 РјРµСЃСЏС† вЂ” 199 Stars",
+        "plan_3m_btn": "вњЁ 3 РјРµСЃСЏС†Р° вЂ” 450 Stars",
+        "plan_6m_btn": "вљЎ 6 РјРµСЃСЏС†РµРІ вЂ” 800 Stars",
+        "plan_1y_btn": "рџ‘‘ 1 РіРѕРґ вЂ” 1200 Stars",
 
         "payment_success": (
-            "🎉 Доступ активирован на {days} дней!"
+            "рџЋ‰ Р”РѕСЃС‚СѓРї Р°РєС‚РёРІРёСЂРѕРІР°РЅ РЅР° {days} РґРЅРµР№!"
         ),
 
         "payment_already_processed": (
-            "✅ Этот платёж уже был обработан."
+            "вњ… Р­С‚РѕС‚ РїР»Р°С‚С‘Р¶ СѓР¶Рµ Р±С‹Р» РѕР±СЂР°Р±РѕС‚Р°РЅ."
         ),
 
-        "chart_title": "🌌 ВАША НАТАЛЬНАЯ КАРТА",
-        "chart_title_short": "🌌 НАТАЛЬНАЯ КАРТА",
+        "chart_title": "рџЊЊ Р’РђРЁРђ РќРђРўРђР›Р¬РќРђРЇ РљРђР РўРђ",
+        "chart_title_short": "рџЊЊ РќРђРўРђР›Р¬РќРђРЇ РљРђР РўРђ",
 
-        "sun": "Солнце",
-        "moon": "Луна",
-        "ascendant": "Асцендент",
+        "sun": "РЎРѕР»РЅС†Рµ",
+        "moon": "Р›СѓРЅР°",
+        "ascendant": "РђСЃС†РµРЅРґРµРЅС‚",
         "mc": "MC",
-        "mercury": "Меркурий",
-        "venus": "Венера",
-        "mars": "Марс",
-        "jupiter": "Юпитер",
-        "saturn": "Сатурн",
-        "uranus": "Уран",
-        "neptune": "Нептун",
-        "pluto": "Плутон",
+        "mercury": "РњРµСЂРєСѓСЂРёР№",
+        "venus": "Р’РµРЅРµСЂР°",
+        "mars": "РњР°СЂСЃ",
+        "jupiter": "Р®РїРёС‚РµСЂ",
+        "saturn": "РЎР°С‚СѓСЂРЅ",
+        "uranus": "РЈСЂР°РЅ",
+        "neptune": "РќРµРїС‚СѓРЅ",
+        "pluto": "РџР»СѓС‚РѕРЅ",
 
         "meaning_sun": (
-            "личность, воля и жизненная энергия"
+            "Р»РёС‡РЅРѕСЃС‚СЊ, РІРѕР»СЏ Рё Р¶РёР·РЅРµРЅРЅР°СЏ СЌРЅРµСЂРіРёСЏ"
         ),
 
         "meaning_moon": (
-            "эмоции, внутренние потребности и чувство безопасности"
+            "СЌРјРѕС†РёРё, РІРЅСѓС‚СЂРµРЅРЅРёРµ РїРѕС‚СЂРµР±РЅРѕСЃС‚Рё Рё С‡СѓРІСЃС‚РІРѕ Р±РµР·РѕРїР°СЃРЅРѕСЃС‚Рё"
         ),
 
         "meaning_ascendant": (
-            "внешний образ, первое впечатление и способ проявляться"
+            "РІРЅРµС€РЅРёР№ РѕР±СЂР°Р·, РїРµСЂРІРѕРµ РІРїРµС‡Р°С‚Р»РµРЅРёРµ Рё СЃРїРѕСЃРѕР± РїСЂРѕСЏРІР»СЏС‚СЊСЃСЏ"
         ),
 
         "meaning_mc": (
-            "карьера, статус и направление профессиональной реализации"
+            "РєР°СЂСЊРµСЂР°, СЃС‚Р°С‚СѓСЃ Рё РЅР°РїСЂР°РІР»РµРЅРёРµ РїСЂРѕС„РµСЃСЃРёРѕРЅР°Р»СЊРЅРѕР№ СЂРµР°Р»РёР·Р°С†РёРё"
         ),
 
         "meaning_mercury": (
-            "мышление, речь и способ обрабатывать информацию"
+            "РјС‹С€Р»РµРЅРёРµ, СЂРµС‡СЊ Рё СЃРїРѕСЃРѕР± РѕР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ"
         ),
 
         "meaning_venus": (
-            "любовь, симпатии, ценности и личный вкус"
+            "Р»СЋР±РѕРІСЊ, СЃРёРјРїР°С‚РёРё, С†РµРЅРЅРѕСЃС‚Рё Рё Р»РёС‡РЅС‹Р№ РІРєСѓСЃ"
         ),
 
         "meaning_mars": (
-            "действие, энергия, напор и способ добиваться своего"
+            "РґРµР№СЃС‚РІРёРµ, СЌРЅРµСЂРіРёСЏ, РЅР°РїРѕСЂ Рё СЃРїРѕСЃРѕР± РґРѕР±РёРІР°С‚СЊСЃСЏ СЃРІРѕРµРіРѕ"
         ),
 
         "meaning_jupiter": (
-            "рост, убеждения, возможности и расширение горизонтов"
+            "СЂРѕСЃС‚, СѓР±РµР¶РґРµРЅРёСЏ, РІРѕР·РјРѕР¶РЅРѕСЃС‚Рё Рё СЂР°СЃС€РёСЂРµРЅРёРµ РіРѕСЂРёР·РѕРЅС‚РѕРІ"
         ),
 
         "meaning_saturn": (
-            "дисциплина, границы, ответственность и зрелость"
+            "РґРёСЃС†РёРїР»РёРЅР°, РіСЂР°РЅРёС†С‹, РѕС‚РІРµС‚СЃС‚РІРµРЅРЅРѕСЃС‚СЊ Рё Р·СЂРµР»РѕСЃС‚СЊ"
         ),
 
         "meaning_uranus": (
-            "свобода, перемены и стремление к независимости"
+            "СЃРІРѕР±РѕРґР°, РїРµСЂРµРјРµРЅС‹ Рё СЃС‚СЂРµРјР»РµРЅРёРµ Рє РЅРµР·Р°РІРёСЃРёРјРѕСЃС‚Рё"
         ),
 
         "meaning_neptune": (
-            "интуиция, идеалы, воображение и чувствительность"
+            "РёРЅС‚СѓРёС†РёСЏ, РёРґРµР°Р»С‹, РІРѕРѕР±СЂР°Р¶РµРЅРёРµ Рё С‡СѓРІСЃС‚РІРёС‚РµР»СЊРЅРѕСЃС‚СЊ"
         ),
 
         "meaning_pluto": (
-            "глубокие изменения, сила и внутренние трансформации"
+            "РіР»СѓР±РѕРєРёРµ РёР·РјРµРЅРµРЅРёСЏ, СЃРёР»Р° Рё РІРЅСѓС‚СЂРµРЅРЅРёРµ С‚СЂР°РЅСЃС„РѕСЂРјР°С†РёРё"
         ),
 
-        "location": "Место рождения",
+        "location": "РњРµСЃС‚Рѕ СЂРѕР¶РґРµРЅРёСЏ",
 
-        "tomorrow_title": "✨ ПРОГНОЗ НА ЗАВТРА",
-        "forecast_title": "🔮 ПРОГНОЗ",
+        "tomorrow_title": "вњЁ РџР РћР“РќРћР— РќРђ Р—РђР’РўР Рђ",
+        "forecast_title": "рџ”® РџР РћР“РќРћР—",
 
-        "trial": "Пробный период",
-        "premium": "Премиум",
-        "expired": "Доступ завершён",
+        "trial": "РџСЂРѕР±РЅС‹Р№ РїРµСЂРёРѕРґ",
+        "premium": "РџСЂРµРјРёСѓРј",
+        "expired": "Р”РѕСЃС‚СѓРї Р·Р°РІРµСЂС€С‘РЅ",
     },
 
     "en": {
 
         "welcome_back": (
-            "✨ Welcome back, {name}!\n\n"
+            "вњЁ Welcome back, {name}!\n\n"
             "Status: {status}\n\n"
             "What would you like to explore?"
         ),
 
         "start_intro": (
-            "✨ Welcome to Aura Astro.\n\n"
+            "вњЁ Welcome to Aura Astro.\n\n"
             "Your personal astrology companion combines "
             "Swiss Ephemeris calculations with "
             "deep psychological interpretation.\n\n"
@@ -330,7 +330,7 @@ TEXTS = {
         ),
 
         "invalid_date": (
-            "⚠️ Invalid date.\n\n"
+            "вљ пёЏ Invalid date.\n\n"
             "Please use `YYYY-MM-DD`.\n"
             "Example: `1995-11-04`."
         ),
@@ -343,7 +343,7 @@ TEXTS = {
         ),
 
         "invalid_time": (
-            "⚠️ Invalid time.\n\n"
+            "вљ пёЏ Invalid time.\n\n"
             "Please use `HH:MM`.\n"
             "Example: `08:45`."
         ),
@@ -355,39 +355,39 @@ TEXTS = {
         ),
 
         "calc_coords": (
-            "🔭 Calculating coordinates and natal chart..."
+            "рџ”­ Calculating coordinates and natal chart..."
         ),
 
         "city_not_found": (
-            "⚠️ Location not found.\n\n"
+            "вљ пёЏ Location not found.\n\n"
             "Try again as `City, Country`."
         ),
 
         "tz_error": (
-            "⚠️ Couldn't resolve the historical timezone.\n\n"
+            "вљ пёЏ Couldn't resolve the historical timezone.\n\n"
             "Try a nearby larger city."
         ),
 
         "calc_error": (
-            "⚠️ Something went wrong calculating the chart.\n\n"
+            "вљ пёЏ Something went wrong calculating the chart.\n\n"
             "Please try again."
         ),
 
         "trial_activated": (
-            "━━━━━━━━━━━━━━━━━━━━\n"
-            "🎁 7-Day Full Access Activated.\n\n"
+            "в”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓ\n"
+            "рџЋЃ 7-Day Full Access Activated.\n\n"
             "Your daily forecast will arrive at 20:00 local time."
         ),
 
-        "btn_chart": "🌌 My Chart",
-        "btn_forecast": "🔮 Today's Forecast",
-        "btn_tomorrow": "🌙 Tomorrow",
-        "btn_ask": "💬 Ask My Chart",
-        "btn_rel": "❤️ Relationships",
-        "btn_career": "💼 Career",
-        "btn_money": "💰 Money",
-        "btn_sub": "⭐ Subscription",
-        "btn_menu": "⬅️ Main Menu",
+        "btn_chart": "рџЊЊ My Chart",
+        "btn_forecast": "рџ”® Today's Forecast",
+        "btn_tomorrow": "рџЊ™ Tomorrow",
+        "btn_ask": "рџ’¬ Ask My Chart",
+        "btn_rel": "вќ¤пёЏ Relationships",
+        "btn_career": "рџ’ј Career",
+        "btn_money": "рџ’° Money",
+        "btn_sub": "в­ђ Subscription",
+        "btn_menu": "в¬…пёЏ Main Menu",
 
         "status_trial": "Trial",
         "status_prem": "Premium",
@@ -401,13 +401,13 @@ TEXTS = {
         ),
 
         "paywall_msg": (
-            "🔒 Your free access has ended.\n\n"
+            "рџ”’ Your free access has ended.\n\n"
             "Choose a subscription to continue receiving "
             "forecasts and asking your chart."
         ),
 
         "ask_prompt": (
-            "💬 ASK MY CHART\n\n"
+            "рџ’¬ ASK MY CHART\n\n"
             "Ask one question about yourself, relationships, "
             "work, or an important decision.\n\n"
             "Example:\n"
@@ -415,32 +415,32 @@ TEXTS = {
         ),
 
         "analyzing": (
-            "🧠 Looking at your chart and current planetary transits..."
+            "рџ§  Looking at your chart and current planetary transits..."
         ),
 
         "subscription_title": (
-            "⭐ AURA ASTRO — MEMBERSHIP"
+            "в­ђ AURA ASTRO вЂ” MEMBERSHIP"
         ),
 
         "subscription_choose": (
             "Choose your access plan:"
         ),
 
-        "plan_1m_btn": "⭐ 1 Month — 199 Stars",
-        "plan_3m_btn": "✨ 3 Months — 450 Stars",
-        "plan_6m_btn": "⚡ 6 Months — 800 Stars",
-        "plan_1y_btn": "👑 1 Year — 1200 Stars",
+        "plan_1m_btn": "в­ђ 1 Month вЂ” 199 Stars",
+        "plan_3m_btn": "вњЁ 3 Months вЂ” 450 Stars",
+        "plan_6m_btn": "вљЎ 6 Months вЂ” 800 Stars",
+        "plan_1y_btn": "рџ‘‘ 1 Year вЂ” 1200 Stars",
 
         "payment_success": (
-            "🎉 Access activated for {days} days!"
+            "рџЋ‰ Access activated for {days} days!"
         ),
 
         "payment_already_processed": (
-            "✅ This payment has already been processed."
+            "вњ… This payment has already been processed."
         ),
 
-        "chart_title": "🌌 YOUR NATAL CHART",
-        "chart_title_short": "🌌 NATAL CHART",
+        "chart_title": "рџЊЊ YOUR NATAL CHART",
+        "chart_title_short": "рџЊЊ NATAL CHART",
 
         "sun": "Sun",
         "moon": "Moon",
@@ -505,8 +505,8 @@ TEXTS = {
 
         "location": "Birth place",
 
-        "tomorrow_title": "✨ TOMORROW'S ALIGNMENT",
-        "forecast_title": "🔮 FORECAST",
+        "tomorrow_title": "вњЁ TOMORROW'S ALIGNMENT",
+        "forecast_title": "рџ”® FORECAST",
 
         "trial": "Trial",
         "premium": "Premium",
@@ -550,33 +550,33 @@ def t(
 # ============================================================
 
 ZODIAC_RU = [
-    "Овен ♈",
-    "Телец ♉",
-    "Близнецы ♊",
-    "Рак ♋",
-    "Лев ♌",
-    "Дева ♍",
-    "Весы ♎",
-    "Скорпион ♏",
-    "Стрелец ♐",
-    "Козерог ♑",
-    "Водолей ♒",
-    "Рыбы ♓",
+    "РћРІРµРЅ в™€",
+    "РўРµР»РµС† в™‰",
+    "Р‘Р»РёР·РЅРµС†С‹ в™Љ",
+    "Р Р°Рє в™‹",
+    "Р›РµРІ в™Њ",
+    "Р”РµРІР° в™Ќ",
+    "Р’РµСЃС‹ в™Ћ",
+    "РЎРєРѕСЂРїРёРѕРЅ в™Џ",
+    "РЎС‚СЂРµР»РµС† в™ђ",
+    "РљРѕР·РµСЂРѕРі в™‘",
+    "Р’РѕРґРѕР»РµР№ в™’",
+    "Р С‹Р±С‹ в™“",
 ]
 
 ZODIAC_EN = [
-    "Aries ♈",
-    "Taurus ♉",
-    "Gemini ♊",
-    "Cancer ♋",
-    "Leo ♌",
-    "Virgo ♍",
-    "Libra ♎",
-    "Scorpio ♏",
-    "Sagittarius ♐",
-    "Capricorn ♑",
-    "Aquarius ♒",
-    "Pisces ♓",
+    "Aries в™€",
+    "Taurus в™‰",
+    "Gemini в™Љ",
+    "Cancer в™‹",
+    "Leo в™Њ",
+    "Virgo в™Ќ",
+    "Libra в™Ћ",
+    "Scorpio в™Џ",
+    "Sagittarius в™ђ",
+    "Capricorn в™‘",
+    "Aquarius в™’",
+    "Pisces в™“",
 ]
 
 
@@ -601,18 +601,18 @@ PLACEMENT_KEYS = [
 
 
 PLACEMENT_ICONS = {
-    "Sun": "☀️",
-    "Moon": "🌙",
-    "Ascendant": "🌅",
-    "MC": "🎯",
-    "Mercury": "☿",
-    "Venus": "♀",
-    "Mars": "♂",
-    "Jupiter": "♃",
-    "Saturn": "♄",
-    "Uranus": "♅",
-    "Neptune": "♆",
-    "Pluto": "♇",
+    "Sun": "вЂпёЏ",
+    "Moon": "рџЊ™",
+    "Ascendant": "рџЊ…",
+    "MC": "рџЋЇ",
+    "Mercury": "вї",
+    "Venus": "в™Ђ",
+    "Mars": "в™‚",
+    "Jupiter": "в™ѓ",
+    "Saturn": "в™„",
+    "Uranus": "в™…",
+    "Neptune": "в™†",
+    "Pluto": "в™‡",
 }
 
 
@@ -624,7 +624,7 @@ def format_placement_line(
 
     icon = PLACEMENT_ICONS.get(
         key,
-        "•",
+        "вЂў",
     )
 
     label = t(
@@ -639,7 +639,7 @@ def format_placement_line(
 
     return (
         f"{icon} {label}: {value}\n"
-        f"   ↳ {meaning}"
+        f"   в†і {meaning}"
     )
 
 
@@ -674,7 +674,7 @@ def build_chart_card(
         ]
 
     lines = [
-        f"{title} — {html.escape(name).upper()}",
+        f"{title} вЂ” {html.escape(name).upper()}",
         "",
     ]
 
@@ -704,28 +704,28 @@ def build_chart_card(
 PRICING_PLANS = {
 
     "plan_1m": {
-        "title": "🌟 1 Month Access",
+        "title": "рџЊџ 1 Month Access",
         "description": "30 days of forecasts & Ask My Chart.",
         "stars": 199,
         "days": 30,
     },
 
     "plan_3m": {
-        "title": "✨ 3 Months Access",
+        "title": "вњЁ 3 Months Access",
         "description": "90 days of complete astro guidance.",
         "stars": 450,
         "days": 90,
     },
 
     "plan_6m": {
-        "title": "⚡ 6 Months Access",
+        "title": "вљЎ 6 Months Access",
         "description": "180 days of forecasts & transit tracking.",
         "stars": 800,
         "days": 180,
     },
 
     "plan_1y": {
-        "title": "👑 1 Year Access",
+        "title": "рџ‘‘ 1 Year Access",
         "description": "365 days of complete astrology coaching.",
         "stars": 1200,
         "days": 365,
@@ -1589,7 +1589,7 @@ def deg_to_sign(
 
     return (
         f"{zodiac[sign_index]} "
-        f"{whole_degree}°{minutes:02d}'"
+        f"{whole_degree}В°{minutes:02d}'"
     )
 
 
@@ -1890,7 +1890,7 @@ def format_transits(
             f"natal "
             f"{item['natal_planet']} "
             f"(orb "
-            f"{item['orb']}°, "
+            f"{item['orb']}В°, "
             f"{item['motion']})"
         )
         for item in transits
@@ -1909,103 +1909,103 @@ def build_personal_fallback(
 
     sun = bp.get(
         "Sun",
-        "—",
+        "вЂ”",
     )
 
     moon = bp.get(
         "Moon",
-        "—",
+        "вЂ”",
     )
 
     asc = bp.get(
         "Ascendant",
-        "—",
+        "вЂ”",
     )
 
     mercury = bp.get(
         "Mercury",
-        "—",
+        "вЂ”",
     )
 
     mars = bp.get(
         "Mars",
-        "—",
+        "вЂ”",
     )
 
     if lang == "ru":
 
         return (
-            f"🧠 АРХИТЕКТУРА ЛИЧНОСТИ\n\n"
-            f"У {name} Солнце находится в {sun}, "
-            f"а Луна — в {moon}. В психологической "
-            f"интерпретации это сочетание показывает "
-            f"разницу между тем, как человек хочет "
-            f"проявлять себя, и тем, что ему необходимо "
-            f"для внутреннего ощущения устойчивости. "
-            f"Главная задача — не выбирать между "
-            f"самовыражением и эмоциональным комфортом, "
-            f"а научиться использовать оба ресурса вместе.\n\n"
+            f"рџ§  РђР РҐРРўР•РљРўРЈР Рђ Р›РР§РќРћРЎРўР\n\n"
+            f"РЈ {name} РЎРѕР»РЅС†Рµ РЅР°С…РѕРґРёС‚СЃСЏ РІ {sun}, "
+            f"Р° Р›СѓРЅР° вЂ” РІ {moon}. Р’ РїСЃРёС…РѕР»РѕРіРёС‡РµСЃРєРѕР№ "
+            f"РёРЅС‚РµСЂРїСЂРµС‚Р°С†РёРё СЌС‚Рѕ СЃРѕС‡РµС‚Р°РЅРёРµ РїРѕРєР°Р·С‹РІР°РµС‚ "
+            f"СЂР°Р·РЅРёС†Сѓ РјРµР¶РґСѓ С‚РµРј, РєР°Рє С‡РµР»РѕРІРµРє С…РѕС‡РµС‚ "
+            f"РїСЂРѕСЏРІР»СЏС‚СЊ СЃРµР±СЏ, Рё С‚РµРј, С‡С‚Рѕ РµРјСѓ РЅРµРѕР±С…РѕРґРёРјРѕ "
+            f"РґР»СЏ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ РѕС‰СѓС‰РµРЅРёСЏ СѓСЃС‚РѕР№С‡РёРІРѕСЃС‚Рё. "
+            f"Р“Р»Р°РІРЅР°СЏ Р·Р°РґР°С‡Р° вЂ” РЅРµ РІС‹Р±РёСЂР°С‚СЊ РјРµР¶РґСѓ "
+            f"СЃР°РјРѕРІС‹СЂР°Р¶РµРЅРёРµРј Рё СЌРјРѕС†РёРѕРЅР°Р»СЊРЅС‹Рј РєРѕРјС„РѕСЂС‚РѕРј, "
+            f"Р° РЅР°СѓС‡РёС‚СЊСЃСЏ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РѕР±Р° СЂРµСЃСѓСЂСЃР° РІРјРµСЃС‚Рµ.\n\n"
 
-            f"🌅 ВНЕШНЕЕ ПРОЯВЛЕНИЕ\n\n"
-            f"Асцендент в {asc} описывает стиль, "
-            f"с которым человек входит в новые ситуации. "
-            f"Это может влиять на первое впечатление, "
-            f"манеру реагировать и способ показывать "
-            f"себя окружающим. Важно помнить, что "
-            f"Асцендент показывает способ проявления, "
-            f"а не фиксирует характер человека целиком.\n\n"
+            f"рџЊ… Р’РќР•РЁРќР•Р• РџР РћРЇР’Р›Р•РќРР•\n\n"
+            f"РђСЃС†РµРЅРґРµРЅС‚ РІ {asc} РѕРїРёСЃС‹РІР°РµС‚ СЃС‚РёР»СЊ, "
+            f"СЃ РєРѕС‚РѕСЂС‹Рј С‡РµР»РѕРІРµРє РІС…РѕРґРёС‚ РІ РЅРѕРІС‹Рµ СЃРёС‚СѓР°С†РёРё. "
+            f"Р­С‚Рѕ РјРѕР¶РµС‚ РІР»РёСЏС‚СЊ РЅР° РїРµСЂРІРѕРµ РІРїРµС‡Р°С‚Р»РµРЅРёРµ, "
+            f"РјР°РЅРµСЂСѓ СЂРµР°РіРёСЂРѕРІР°С‚СЊ Рё СЃРїРѕСЃРѕР± РїРѕРєР°Р·С‹РІР°С‚СЊ "
+            f"СЃРµР±СЏ РѕРєСЂСѓР¶Р°СЋС‰РёРј. Р’Р°Р¶РЅРѕ РїРѕРјРЅРёС‚СЊ, С‡С‚Рѕ "
+            f"РђСЃС†РµРЅРґРµРЅС‚ РїРѕРєР°Р·С‹РІР°РµС‚ СЃРїРѕСЃРѕР± РїСЂРѕСЏРІР»РµРЅРёСЏ, "
+            f"Р° РЅРµ С„РёРєСЃРёСЂСѓРµС‚ С…Р°СЂР°РєС‚РµСЂ С‡РµР»РѕРІРµРєР° С†РµР»РёРєРѕРј.\n\n"
 
-            f"⚡ МЫШЛЕНИЕ И ДЕЙСТВИЯ\n\n"
-            f"Меркурий в {mercury} показывает привычный "
-            f"способ обрабатывать информацию и выражать "
-            f"мысли, а Марс в {mars} — способ превращать "
-            f"решение в действие. Сильная сторона такого "
-            f"сочетания раскрывается тогда, когда ясная "
-            f"мысль получает конкретное направление.\n\n"
+            f"вљЎ РњР«РЁР›Р•РќРР• Р Р”Р•Р™РЎРўР’РРЇ\n\n"
+            f"РњРµСЂРєСѓСЂРёР№ РІ {mercury} РїРѕРєР°Р·С‹РІР°РµС‚ РїСЂРёРІС‹С‡РЅС‹Р№ "
+            f"СЃРїРѕСЃРѕР± РѕР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ Рё РІС‹СЂР°Р¶Р°С‚СЊ "
+            f"РјС‹СЃР»Рё, Р° РњР°СЂСЃ РІ {mars} вЂ” СЃРїРѕСЃРѕР± РїСЂРµРІСЂР°С‰Р°С‚СЊ "
+            f"СЂРµС€РµРЅРёРµ РІ РґРµР№СЃС‚РІРёРµ. РЎРёР»СЊРЅР°СЏ СЃС‚РѕСЂРѕРЅР° С‚Р°РєРѕРіРѕ "
+            f"СЃРѕС‡РµС‚Р°РЅРёСЏ СЂР°СЃРєСЂС‹РІР°РµС‚СЃСЏ С‚РѕРіРґР°, РєРѕРіРґР° СЏСЃРЅР°СЏ "
+            f"РјС‹СЃР»СЊ РїРѕР»СѓС‡Р°РµС‚ РєРѕРЅРєСЂРµС‚РЅРѕРµ РЅР°РїСЂР°РІР»РµРЅРёРµ.\n\n"
 
-            f"💎 ГЛАВНАЯ СИЛА\n\n"
-            f"В этой карте особенно важно соединять "
-            f"самопонимание с действием. Чем лучше "
-            f"{name} замечает собственные реакции, "
-            f"тем точнее может выбирать момент для "
-            f"решения и последовательного движения вперёд.\n\n"
+            f"рџ’Ћ Р“Р›РђР’РќРђРЇ РЎРР›Рђ\n\n"
+            f"Р’ СЌС‚РѕР№ РєР°СЂС‚Рµ РѕСЃРѕР±РµРЅРЅРѕ РІР°Р¶РЅРѕ СЃРѕРµРґРёРЅСЏС‚СЊ "
+            f"СЃР°РјРѕРїРѕРЅРёРјР°РЅРёРµ СЃ РґРµР№СЃС‚РІРёРµРј. Р§РµРј Р»СѓС‡С€Рµ "
+            f"{name} Р·Р°РјРµС‡Р°РµС‚ СЃРѕР±СЃС‚РІРµРЅРЅС‹Рµ СЂРµР°РєС†РёРё, "
+            f"С‚РµРј С‚РѕС‡РЅРµРµ РјРѕР¶РµС‚ РІС‹Р±РёСЂР°С‚СЊ РјРѕРјРµРЅС‚ РґР»СЏ "
+            f"СЂРµС€РµРЅРёСЏ Рё РїРѕСЃР»РµРґРѕРІР°С‚РµР»СЊРЅРѕРіРѕ РґРІРёР¶РµРЅРёСЏ РІРїРµСЂС‘Рґ.\n\n"
 
-            f"🎯 ГЛАВНЫЙ ВЫВОД\n\n"
-            f"Натальная карта не задаёт готовый сценарий. "
-            f"Она помогает увидеть повторяющиеся "
-            f"психологические тенденции и использовать "
-            f"их более осознанно."
+            f"рџЋЇ Р“Р›РђР’РќР«Р™ Р’Р«Р’РћР”\n\n"
+            f"РќР°С‚Р°Р»СЊРЅР°СЏ РєР°СЂС‚Р° РЅРµ Р·Р°РґР°С‘С‚ РіРѕС‚РѕРІС‹Р№ СЃС†РµРЅР°СЂРёР№. "
+            f"РћРЅР° РїРѕРјРѕРіР°РµС‚ СѓРІРёРґРµС‚СЊ РїРѕРІС‚РѕСЂСЏСЋС‰РёРµСЃСЏ "
+            f"РїСЃРёС…РѕР»РѕРіРёС‡РµСЃРєРёРµ С‚РµРЅРґРµРЅС†РёРё Рё РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ "
+            f"РёС… Р±РѕР»РµРµ РѕСЃРѕР·РЅР°РЅРЅРѕ."
         )
 
     return (
-        f"🧠 PERSONALITY ARCHITECTURE\n\n"
+        f"рџ§  PERSONALITY ARCHITECTURE\n\n"
         f"{name}'s Sun is in {sun}, while the Moon "
         f"is in {moon}. Psychologically, this highlights "
         f"the relationship between conscious identity "
         f"and emotional needs. The most useful approach "
         f"is to let both sides of the personality work together.\n\n"
 
-        f"🌅 OUTER EXPRESSION\n\n"
+        f"рџЊ… OUTER EXPRESSION\n\n"
         f"The Ascendant in {asc} describes the style "
         f"used when entering new situations and the kind "
         f"of first impression naturally created. It is "
         f"a mode of expression rather than a complete "
         f"description of personality.\n\n"
 
-        f"⚡ THINKING AND ACTION\n\n"
+        f"вљЎ THINKING AND ACTION\n\n"
         f"Mercury in {mercury} describes information "
         f"processing and communication, while Mars in "
         f"{mars} describes the way motivation becomes action. "
         f"The strongest result comes from giving clear "
         f"thinking a concrete direction.\n\n"
 
-        f"💎 CORE STRENGTH\n\n"
+        f"рџ’Ћ CORE STRENGTH\n\n"
         f"This chart benefits from combining self-awareness "
         f"with deliberate action. The more clearly {name} "
         f"recognizes personal reactions, the easier it becomes "
         f"to make precise decisions and move forward consistently.\n\n"
 
-        f"🎯 MAIN TAKEAWAY\n\n"
+        f"рџЋЇ MAIN TAKEAWAY\n\n"
         f"A natal chart does not define a fixed future. "
         f"It can be used to recognize recurring psychological "
         f"patterns and work with them more consciously."
@@ -2029,7 +2029,7 @@ CORE RULES:
 2. Never claim that something is guaranteed to happen.
 3. Never say that a person is doomed, cursed, or destined.
 4. Never make medical, legal, or financial guarantees.
-5. Never use generic horoscope clichés.
+5. Never use generic horoscope clichГ©s.
 6. Always connect the interpretation to the ACTUAL
    planetary placements supplied by the user.
 7. Combine placements instead of interpreting them
@@ -2091,7 +2091,7 @@ Use the exact placements supplied in the prompt.
         + lang_rule
     )
 
-    # Убираем возможные дубликаты моделей.
+    # РЈР±РёСЂР°РµРј РІРѕР·РјРѕР¶РЅС‹Рµ РґСѓР±Р»РёРєР°С‚С‹ РјРѕРґРµР»РµР№.
     models = []
 
     for model in MODELS_CHAIN:
@@ -2142,9 +2142,9 @@ Use the exact placements supplied in the prompt.
 
             continue
 
-    # ВАЖНО:
-    # Здесь больше НЕТ старого универсального ответа.
-    # Если Gemini недоступен, возвращаем персональный текст.
+    # Р’РђР–РќРћ:
+    # Р—РґРµСЃСЊ Р±РѕР»СЊС€Рµ РќР•Рў СЃС‚Р°СЂРѕРіРѕ СѓРЅРёРІРµСЂСЃР°Р»СЊРЅРѕРіРѕ РѕС‚РІРµС‚Р°.
+    # Р•СЃР»Рё Gemini РЅРµРґРѕСЃС‚СѓРїРµРЅ, РІРѕР·РІСЂР°С‰Р°РµРј РїРµСЂСЃРѕРЅР°Р»СЊРЅС‹Р№ С‚РµРєСЃС‚.
     fallback_name = (
         prompt.split(
             "Client name:",
@@ -2198,8 +2198,8 @@ Use the exact placements supplied in the prompt.
     if lang == "ru":
 
         return (
-            "Не удалось получить AI-разбор прямо сейчас. "
-            "Попробуйте открыть карту ещё раз через несколько секунд."
+            "РќРµ СѓРґР°Р»РѕСЃСЊ РїРѕР»СѓС‡РёС‚СЊ AI-СЂР°Р·Р±РѕСЂ РїСЂСЏРјРѕ СЃРµР№С‡Р°СЃ. "
+            "РџРѕРїСЂРѕР±СѓР№С‚Рµ РѕС‚РєСЂС‹С‚СЊ РєР°СЂС‚Сѓ РµС‰С‘ СЂР°Р· С‡РµСЂРµР· РЅРµСЃРєРѕР»СЊРєРѕ СЃРµРєСѓРЅРґ."
         )
 
     return (
@@ -2209,7 +2209,7 @@ Use the exact placements supplied in the prompt.
 
 
 # ============================================================
-# AI — NATAL CHART
+# AI вЂ” NATAL CHART
 # ============================================================
 
 async def generate_blueprint_text(
@@ -2238,11 +2238,11 @@ Do not write a generic horoscope.
 Use the actual combinations between the placements.
 
 Length:
-approximately 350–450 words.
+approximately 350вЂ“450 words.
 
 Structure exactly into these sections:
 
-🧠 АРХИТЕКТУРА ЛИЧНОСТИ
+рџ§  РђР РҐРРўР•РљРўРЈР Рђ Р›РР§РќРћРЎРўР
 
 Analyze Sun + Moon together.
 Explain the relationship between conscious identity,
@@ -2250,28 +2250,28 @@ will, emotional needs and inner security.
 Describe at least one possible internal tension
 and one psychological resource.
 
-🌅 ВНЕШНЕЕ ПРОЯВЛЕНИЕ
+рџЊ… Р’РќР•РЁРќР•Р• РџР РћРЇР’Р›Р•РќРР•
 
 Analyze the Ascendant together with the Sun.
 Explain first impression, social behavior,
 natural way of entering situations and how
 inner personality may differ from outer presentation.
 
-⚡ МЫШЛЕНИЕ И ДЕЙСТВИЯ
+вљЎ РњР«РЁР›Р•РќРР• Р Р”Р•Р™РЎРўР’РРЇ
 
 Analyze Mercury + Mars together.
 Explain thinking style, communication,
 decision-making, motivation, assertiveness,
 conflict behavior and how ideas become actions.
 
-❤️ ОТНОШЕНИЯ
+вќ¤пёЏ РћРўРќРћРЁР•РќРРЇ
 
 Use Venus + Moon + Mars.
 Explain attraction, emotional closeness,
 personal boundaries, communication of needs
 and what the person may value in relationships.
 
-💎 ГЛАВНАЯ СИЛА
+рџ’Ћ Р“Р›РђР’РќРђРЇ РЎРР›Рђ
 
 Identify ONE distinctive psychological strength
 that emerges from the combination of several
@@ -2280,7 +2280,7 @@ placements in this exact chart.
 Explain why it is distinctive and give one
 concrete way to develop it.
 
-🎯 ГЛАВНЫЙ ВЫВОД
+рџЋЇ Р“Р›РђР’РќР«Р™ Р’Р«Р’РћР”
 
 Finish with a concise personal conclusion
 about the central psychological pattern
@@ -2297,7 +2297,7 @@ Do not invent houses.
 
 Do not predict exact events.
 
-Do not use generic motivational clichés.
+Do not use generic motivational clichГ©s.
 
 Do not mention that this is a generated response.
 
@@ -2312,7 +2312,7 @@ Every sentence must be complete.
 
 
 # ============================================================
-# AI — DAILY FORECAST
+# AI вЂ” DAILY FORECAST
 # ============================================================
 
 async def generate_daily_forecast(
@@ -2348,30 +2348,30 @@ The forecast must be based on the supplied
 natal chart and the supplied transits.
 
 Length:
-approximately 220–280 words.
+approximately 220вЂ“280 words.
 
 Structure exactly:
 
-🔮 ТЕМА ДНЯ
+рџ”® РўР•РњРђ Р”РќРЇ
 
 One clear meaningful title.
 
-🧠 ПСИХОЛОГИЧЕСКИЙ ФОН
+рџ§  РџРЎРРҐРћР›РћР“РР§Р•РЎРљРР™ Р¤РћРќ
 
 Two or three complete sentences describing
 the psychological atmosphere and attention patterns.
 
-❤️ ОТНОШЕНИЯ
+вќ¤пёЏ РћРўРќРћРЁР•РќРРЇ
 
 One or two sentences about communication,
 boundaries, emotional reactions or intimacy.
 
-⚡ ТАКТИЧЕСКИЕ ДЕЙСТВИЯ
+вљЎ РўРђРљРўРР§Р•РЎРљРР• Р”Р•Р™РЎРўР’РРЇ
 
 Exactly two bullet points.
 Each must be practical and actionable today.
 
-🎯 ВОПРОС ДЛЯ СЕБЯ
+рџЋЇ Р’РћРџР РћРЎ Р”Р›РЇ РЎР•Р‘РЇ
 
 One thoughtful question.
 
@@ -2397,7 +2397,7 @@ Complete every sentence.
 
 
 # ============================================================
-# AI — ASK MY CHART
+# AI вЂ” ASK MY CHART
 # ============================================================
 
 async def generate_chart_answer(
@@ -2436,7 +2436,7 @@ Answer the client's actual question as
 a psychological astrology mentor.
 
 Length:
-approximately 220–280 words.
+approximately 220вЂ“280 words.
 
 Requirements:
 
@@ -2517,7 +2517,7 @@ def get_status_str(
         )
 
     return (
-        f"{status} · "
+        f"{status} В· "
         f"{t('days_left', lang, days=access['days_left'])}"
     )
 
@@ -2716,7 +2716,7 @@ async def cmd_start(
 
 
 # ============================================================
-# REGISTRATION — NAME
+# REGISTRATION вЂ” NAME
 # ============================================================
 
 @dp.message(
@@ -2763,7 +2763,7 @@ async def process_name(
 
 
 # ============================================================
-# REGISTRATION — DATE
+# REGISTRATION вЂ” DATE
 # ============================================================
 
 @dp.message(
@@ -2831,7 +2831,7 @@ async def process_date(
 
 
 # ============================================================
-# REGISTRATION — TIME
+# REGISTRATION вЂ” TIME
 # ============================================================
 
 @dp.message(
@@ -2907,7 +2907,7 @@ async def process_time(
 
 
 # ============================================================
-# REGISTRATION — CITY
+# REGISTRATION вЂ” CITY
 # ============================================================
 
 @dp.message(
@@ -3086,7 +3086,7 @@ async def process_city(
     full_text = (
         card
         + "\n\n"
-        + "━━━━━━━━━━━━━━━━━━━━"
+        + "в”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓ"
         + "\n\n"
         + analysis
         + "\n\n"
@@ -3248,12 +3248,12 @@ async def cb_chart(
     full_text = (
         card
         + "\n\n"
-        + f"📍 {t('location', lang)}: "
+        + f"рџ“Ќ {t('location', lang)}: "
         + html.escape(
             user["city"]
         )
         + "\n"
-        + "━━━━━━━━━━━━━━━━━━━━"
+        + "в”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓв”Ѓ"
         + "\n\n"
         + analysis
     )
@@ -3424,7 +3424,7 @@ async def cb_forecast(
 
     header = (
         f"{title}\n"
-        f"📅 {target_date.strftime('%d.%m.%Y')}\n\n"
+        f"рџ“… {target_date.strftime('%d.%m.%Y')}\n\n"
     )
 
     await send_long_message(
@@ -3627,7 +3627,7 @@ async def process_question(
     )
 
     full_text = (
-        f"💬 {html.escape(question)}\n\n"
+        f"рџ’¬ {html.escape(question)}\n\n"
         f"{answer}"
     )
 
@@ -3694,8 +3694,8 @@ async def cb_topics(
     topic_data = {
 
         "topic_relationships": {
-            "title_ru": "❤️ ОТНОШЕНИЯ И БЛИЗОСТЬ",
-            "title_en": "❤️ RELATIONSHIPS & INTIMACY",
+            "title_ru": "вќ¤пёЏ РћРўРќРћРЁР•РќРРЇ Р Р‘Р›РР—РћРЎРўР¬",
+            "title_en": "вќ¤пёЏ RELATIONSHIPS & INTIMACY",
             "focus": (
                 "Venus, Moon, Mars, emotional intimacy, "
                 "attraction, attachment patterns, "
@@ -3704,8 +3704,8 @@ async def cb_topics(
         },
 
         "topic_career": {
-            "title_ru": "💼 КАРЬЕРА И ПРИЗВАНИЕ",
-            "title_en": "💼 CAREER & VOCATION",
+            "title_ru": "рџ’ј РљРђР Р¬Р•Р Рђ Р РџР РР—Р’РђРќРР•",
+            "title_en": "рџ’ј CAREER & VOCATION",
             "focus": (
                 "MC, Saturn, Mars, Sun, professional ambition, "
                 "leadership, discipline, motivation, work identity "
@@ -3714,8 +3714,8 @@ async def cb_topics(
         },
 
         "topic_money": {
-            "title_ru": "💰 ФИНАНСЫ И РЕСУРСЫ",
-            "title_en": "💰 MONEY & RESOURCES",
+            "title_ru": "рџ’° Р¤РРќРђРќРЎР« Р Р Р•РЎРЈР РЎР«",
+            "title_en": "рџ’° MONEY & RESOURCES",
             "focus": (
                 "Jupiter, Venus, Saturn, resource management, "
                 "spending habits, risk perception, self-worth, "
@@ -3777,7 +3777,7 @@ Create a deep, personal psychological and strategic
 astrology reading focused strictly on the selected domain.
 
 Length:
-approximately 250–300 words.
+approximately 250вЂ“300 words.
 
 Structure exactly:
 
@@ -3794,7 +3794,7 @@ Give exactly two practical recommendations.
 
 Do not make deterministic predictions.
 Do not invent houses.
-Do not use generic horoscope clichés.
+Do not use generic horoscope clichГ©s.
 Do not give guarantees.
 Complete every sentence.
 """
@@ -3836,7 +3836,7 @@ Complete every sentence.
     )
 
     full_text = (
-        f"✨ {title}\n\n"
+        f"вњЁ {title}\n\n"
         f"{reading}"
     )
 
@@ -3927,7 +3927,7 @@ async def cb_sub(
 
 
 # ============================================================
-# PAYMENTS — TELEGRAM STARS
+# PAYMENTS вЂ” TELEGRAM STARS
 # ============================================================
 
 @dp.callback_query(
@@ -4217,11 +4217,11 @@ async def send_daily_cycle():
 
             message_text = (
                 f"{title}\n"
-                f"📅 "
+                f"рџ“… "
                 f"{forecast_date.strftime('%d.%m.%Y')}"
                 f"\n\n"
                 f"{reading}\n\n"
-                f"⏳ "
+                f"вЏі "
                 f"{get_status_str(access, lang)}"
             )
 
@@ -4350,12 +4350,12 @@ async def main():
     )
 
     print(
-        "🚀 Aura Astro v4.0 is running.",
+        "рџљЂ Aura Astro v4.0 is running.",
         flush=True,
     )
 
     print(
-        f"🤖 Gemini model: "
+        f"рџ¤– Gemini model: "
         f"{DEFAULT_GEMINI_MODEL}",
         flush=True,
     )
