@@ -30,7 +30,7 @@ from google.genai import types as genai_types
 
 
 # ============================================================
-# AURA ASTRO v6.0
+# AURA ASTRO v8.0
 # ============================================================
 # Улучшения:
 # - дома планет
@@ -94,7 +94,7 @@ dp = Dispatcher(
 )
 
 geolocator = Nominatim(
-    user_agent="aura_astro_engine_prod_v6",
+    user_agent="aura_astro_engine_prod_v8",
     timeout=7,
 )
 
@@ -112,333 +112,338 @@ db_pool: Optional[asyncpg.Pool] = None
 # LOCALIZATION
 # ============================================================
 
-TEXTS = {
-    "ru": {
-        "welcome_back": (
-            "✨ С возвращением, {name}!\n\n"
-            "Статус: {status}\n\n"
-            "Что хотите изучить?"
-        ),
-        "start_intro": (
-            "✨ Добро пожаловать в Aura Astro.\n\n"
-            "Ваш персональный астрологический проводник "
-            "объединяет точные расчёты Swiss Ephemeris "
-            "и психологическую интерпретацию.\n\n"
-            "Давайте построим вашу натальную карту.\n\n"
-            "Как к вам обращаться?"
-        ),
-        "ask_birth_date": (
-            "Укажите дату рождения в формате `ГГГГ-ММ-ДД`.\n\n"
-            "Например: `1994-08-23`"
-        ),
-        "invalid_date": (
-            "⚠️ Неверный формат даты.\n\n"
-            "Используйте `ГГГГ-ММ-ДД`.\n"
-            "Например: `1995-11-04`."
-        ),
-        "ask_birth_time": (
-            "В какое время вы родились?\n\n"
-            "Используйте 24-часовой формат `ЧЧ:ММ`.\n"
-            "Например: `14:30`.\n\n"
-            "Если точное время неизвестно, напишите `12:00`."
-        ),
-        "invalid_time": (
-            "⚠️ Неверный формат времени.\n\n"
-            "Введите время в формате `ЧЧ:ММ`.\n"
-            "Например: `08:45`."
-        ),
-        "ask_city": (
-            "Где вы родились?\n\n"
-            "Укажите город и страну.\n"
-            "Например: `Москва, Россия`."
-        ),
-        "calc_coords": "🔭 Рассчитываю координаты и натальную карту...",
-        "city_not_found": (
-            "⚠️ Город не найден.\n\n"
-            "Попробуйте написать точнее: `Город, Страна`."
-        ),
-        "tz_error": (
-            "⚠️ Не удалось определить исторический часовой пояс.\n\n"
-            "Попробуйте указать ближайший крупный город."
-        ),
-        "calc_error": (
-            "⚠️ Произошла ошибка при расчёте карты.\n\n"
-            "Пожалуйста, попробуйте ещё раз."
-        ),
-        "trial_activated": (
-            "━━━━━━━━━━━━━━━━━━━━\n"
-            "🎁 Полный доступ активирован на 7 дней.\n\n"
-            "Ежедневный прогноз будет приходить в 20:00 "
-            "по местному времени."
-        ),
-        "btn_chart": "🌌 Моя карта",
-        "btn_forecast": "🔮 Прогноз на сегодня",
-        "btn_tomorrow": "🌙 Завтра",
-        "btn_ask": "💬 Спросить карту",
-        "btn_rel": "❤️ Отношения",
-        "btn_career": "💼 Карьера",
-        "btn_money": "💰 Финансы",
-        "btn_sub": "⭐ Подписка",
-        "btn_language": "🌐 Язык",
-        "language_title": "🌐 ВЫБОР ЯЗЫКА",
-        "language_choose": "Выберите язык интерфейса:",
-        "language_saved": "✅ Язык изменён на русский.",
-        "btn_menu": "⬅️ Главное меню",
-        "status_trial": "Пробный период",
-        "status_prem": "Премиум",
-        "status_exp": "Истёк",
-        "days_left": "осталось {days} дн.",
-        "limit_reached": (
-            "Вы исчерпали лимит запросов к карте на сегодня.\n\n"
-            "Возвращайтесь завтра."
-        ),
-        "paywall_msg": (
-            "🔒 Бесплатный доступ завершён.\n\n"
-            "Оформите подписку, чтобы продолжить получать "
-            "прогнозы и задавать вопросы натальной карте."
-        ),
-        "ask_prompt": (
-            "💬 СПРОСИТЬ КАРТУ\n\n"
-            "Задайте вопрос о себе, работе, отношениях "
-            "или важном выборе.\n\n"
-            "Например:\n"
-            "«Почему мне сложно доверять людям?»"
-        ),
-        "analyzing": "🧠 Анализирую вашу карту...",
-        "subscription_title": "⭐ AURA ASTRO — ПОДПИСКА",
-        "subscription_choose": "Выберите план доступа:",
-        "plan_1m_btn": "⭐ 1 месяц — 199 Stars",
-        "plan_3m_btn": "✨ 3 месяца — 450 Stars",
-        "plan_6m_btn": "⚡ 6 месяцев — 800 Stars",
-        "plan_1y_btn": "👑 1 год — 1200 Stars",
-        "payment_success": "🎉 Доступ активирован на {days} дней!",
-        "payment_already_processed": "✅ Этот платёж уже был обработан.",
-        "chart_title": "🌌 ВАША НАТАЛЬНАЯ КАРТА",
-        "chart_title_short": "🌌 НАТАЛЬНАЯ КАРТА",
-        "sun": "Солнце",
-        "moon": "Луна",
-        "ascendant": "Асцендент",
-        "mc": "MC",
-        "mercury": "Меркурий",
-        "venus": "Венера",
-        "mars": "Марс",
-        "jupiter": "Юпитер",
-        "saturn": "Сатурн",
-        "uranus": "Уран",
-        "neptune": "Нептун",
-        "pluto": "Плутон",
-        "meaning_sun": "личность, воля и жизненная энергия",
-        "meaning_moon": "эмоции, внутренние потребности и чувство безопасности",
-        "meaning_ascendant": "внешний образ, первое впечатление и способ проявляться",
-        "meaning_mc": "карьера, статус и направление профессиональной реализации",
-        "meaning_mercury": "мышление, речь и способ обрабатывать информацию",
-        "meaning_venus": "любовь, симпатии, ценности и личный вкус",
-        "meaning_mars": "действие, энергия, напор и способ добиваться своего",
-        "meaning_jupiter": "рост, убеждения, возможности и расширение горизонтов",
-        "meaning_saturn": "дисциплина, границы, ответственность и зрелость",
-        "meaning_uranus": "свобода, перемены и стремление к независимости",
-        "meaning_neptune": "интуиция, идеалы, воображение и чувствительность",
-        "meaning_pluto": "глубокие изменения, сила и внутренние трансформации",
-        "location": "Место рождения",
-        "tomorrow_title": "✨ ПРОГНОЗ НА ЗАВТРА",
-        "forecast_title": "🔮 ПРОГНОЗ",
-        "trial": "Пробный период",
-        "premium": "Премиум",
-        "expired": "Доступ завершён",
-        "house": "дом",
-        "retrograde": "ретроградная",
-        "direct": "прямая",
-        "aspects_title": "🔺 КЛЮЧЕВЫЕ АСПЕКТЫ",
-        "no_aspects": "Тесных основных аспектов не обнаружено.",
-        "natal_data_title": "📊 ОСНОВНЫЕ ПОКАЗАТЕЛИ",
-        "degree_hint": "градус уточняет положение планеты внутри знака",
-        "house_hint": "дом показывает сферу жизни, где проявляется энергия",
-        "aspect_hint": "аспект показывает взаимодействие двух планет",
-        "retro_hint": "ретроградность в астрологической традиции связывается с более внутренней переработкой темы",
-    },
-
-    "en": {
-        "welcome_back": (
-            "✨ Welcome back, {name}!\n\n"
-            "Status: {status}\n\n"
-            "What would you like to explore?"
-        ),
-        "start_intro": (
-            "✨ Welcome to Aura Astro.\n\n"
-            "Your personal astrology companion combines "
-            "Swiss Ephemeris calculations with psychological interpretation.\n\n"
-            "Let's build your personal chart.\n\n"
-            "What is your preferred name?"
-        ),
-        "ask_birth_date": (
-            "What is your date of birth?\n\n"
-            "Use `YYYY-MM-DD`.\n"
-            "Example: `1994-08-23`"
-        ),
-        "invalid_date": (
-            "⚠️ Invalid date.\n\n"
-            "Please use `YYYY-MM-DD`."
-        ),
-        "ask_birth_time": (
-            "What time were you born?\n\n"
-            "Use 24-hour format `HH:MM`.\n"
-            "Example: `14:30`.\n\n"
-            "If unknown, type `12:00`."
-        ),
-        "invalid_time": (
-            "⚠️ Invalid time.\n\n"
-            "Please use `HH:MM`."
-        ),
-        "ask_city": (
-            "Where were you born?\n\n"
-            "Enter city and country.\n"
-            "Example: `London, UK`."
-        ),
-        "calc_coords": "🔭 Calculating coordinates and natal chart...",
-        "city_not_found": (
-            "⚠️ Location not found.\n\n"
-            "Try again as `City, Country`."
-        ),
-        "tz_error": (
-            "⚠️ Couldn't resolve the historical timezone.\n\n"
-            "Try a nearby larger city."
-        ),
-        "calc_error": (
-            "⚠️ Something went wrong calculating the chart.\n\n"
-            "Please try again."
-        ),
-        "trial_activated": (
-            "━━━━━━━━━━━━━━━━━━━━\n"
-            "🎁 7-Day Full Access Activated.\n\n"
-            "Your daily forecast will arrive at 20:00 local time."
-        ),
-        "btn_chart": "🌌 My Chart",
-        "btn_forecast": "🔮 Today's Forecast",
-        "btn_tomorrow": "🌙 Tomorrow",
-        "btn_ask": "💬 Ask My Chart",
-        "btn_rel": "❤️ Relationships",
-        "btn_career": "💼 Career",
-        "btn_money": "💰 Money",
-        "btn_sub": "⭐ Subscription",
-        "btn_language": "🌐 Language",
-        "language_title": "🌐 LANGUAGE",
-        "language_choose": "Choose your interface language:",
-        "language_saved": "✅ Language changed to English.",
-        "btn_menu": "⬅️ Main Menu",
-        "status_trial": "Trial",
-        "status_prem": "Premium",
-        "status_exp": "Expired",
-        "days_left": "{days} day(s) left",
-        "limit_reached": (
-            "You've reached today's AI guidance limit.\n\n"
-            "Come back tomorrow."
-        ),
-        "paywall_msg": (
-            "🔒 Your free access has ended.\n\n"
-            "Choose a subscription to continue receiving forecasts "
-            "and asking your chart."
-        ),
-        "ask_prompt": (
-            "💬 ASK MY CHART\n\n"
-            "Ask a question about yourself, relationships, work, "
-            "or an important decision.\n\n"
-            "Example:\n"
-            "\"Why do I find it hard to trust people?\""
-        ),
-        "analyzing": "🧠 Analyzing your chart...",
-        "subscription_title": "⭐ AURA ASTRO — MEMBERSHIP",
-        "subscription_choose": "Choose your access plan:",
-        "plan_1m_btn": "⭐ 1 Month — 199 Stars",
-        "plan_3m_btn": "✨ 3 Months — 450 Stars",
-        "plan_6m_btn": "⚡ 6 Months — 800 Stars",
-        "plan_1y_btn": "👑 1 Year — 1200 Stars",
-        "payment_success": "🎉 Access activated for {days} days!",
-        "payment_already_processed": "✅ This payment has already been processed.",
-        "chart_title": "🌌 YOUR NATAL CHART",
-        "chart_title_short": "🌌 NATAL CHART",
-        "sun": "Sun",
-        "moon": "Moon",
-        "ascendant": "Ascendant",
-        "mc": "MC",
-        "mercury": "Mercury",
-        "venus": "Venus",
-        "mars": "Mars",
-        "jupiter": "Jupiter",
-        "saturn": "Saturn",
-        "uranus": "Uranus",
-        "neptune": "Neptune",
-        "pluto": "Pluto",
-        "meaning_sun": "personality, will and life energy",
-        "meaning_moon": "emotions, inner needs and sense of security",
-        "meaning_ascendant": "outer image, first impression and way of expressing yourself",
-        "meaning_mc": "career, status and professional direction",
-        "meaning_mercury": "thinking, communication and information processing",
-        "meaning_venus": "love, attraction, values and personal taste",
-        "meaning_mars": "action, energy, drive and determination",
-        "meaning_jupiter": "growth, beliefs, opportunities and expansion",
-        "meaning_saturn": "discipline, boundaries, responsibility and maturity",
-        "meaning_uranus": "freedom, change and independence",
-        "meaning_neptune": "intuition, ideals, imagination and sensitivity",
-        "meaning_pluto": "deep change, power and inner transformation",
-        "location": "Birth place",
-        "tomorrow_title": "✨ TOMORROW'S ALIGNMENT",
-        "forecast_title": "🔮 FORECAST",
-        "trial": "Trial",
-        "premium": "Premium",
-        "expired": "Access expired",
-        "house": "house",
-        "retrograde": "retrograde",
-        "direct": "direct",
-        "aspects_title": "🔺 KEY NATAL ASPECTS",
-        "no_aspects": "No tight major aspects detected.",
-        "natal_data_title": "📊 KEY INDICATORS",
-        "degree_hint": "the degree refines the planet's position within its sign",
-        "house_hint": "the house shows the life area where the energy is expressed",
-        "aspect_hint": "an aspect describes the interaction between two planets",
-        "retro_hint": "in traditional astrology, retrograde motion is associated with more internal processing of a theme",
-    },
-}
-
-
-SUPPORTED_LANGS = ("ru", "en", "de", "es", "fr", "it", "pt", "tr", "uk")
-
-# Additional interface languages. Russian and English remain the original full dictionaries.\n# The compact dictionaries below cover every UI key and are merged into TEXTS at startup.
-EXTRA_TEXTS = {
-    "de": {
-        "welcome_back":"✨ Willkommen zurück, {name}!\\n\\nStatus: {status}\\n\\nWas möchtest du erkunden?","start_intro":"✨ Willkommen bei Aura Astro.\\n\\nDein persönlicher Astrologie-Begleiter verbindet präzise Swiss-Ephemeris-Berechnungen mit psychologischer Interpretation.\\n\\nLass uns dein Geburtshoroskop erstellen.\\n\\nWie dürfen wir dich nennen?","ask_birth_date":"Gib dein Geburtsdatum im Format `JJJJ-MM-TT` ein.\\n\\nBeispiel: `1994-08-23`","invalid_date":"⚠️ Ungültiges Datum.\\n\\nBitte `JJJJ-MM-TT` verwenden.","ask_birth_time":"Wann wurdest du geboren?\\n\\nVerwende das 24-Stunden-Format `HH:MM`.\\nBeispiel: `14:30`.\\n\\nWenn unbekannt, schreibe `12:00`.","invalid_time":"⚠️ Ungültige Uhrzeit.\\n\\nBitte `HH:MM` verwenden.","ask_city":"Wo wurdest du geboren?\\n\\nGib Stadt und Land an.\\nBeispiel: `Berlin, Deutschland`.","calc_coords":"🔭 Koordinaten und Geburtshoroskop werden berechnet...","city_not_found":"⚠️ Ort nicht gefunden.\\n\\nVersuche `Stadt, Land`.","tz_error":"⚠️ Historische Zeitzone konnte nicht bestimmt werden.\\n\\nVersuche eine größere Stadt in der Nähe.","calc_error":"⚠️ Bei der Berechnung ist ein Fehler aufgetreten.\\n\\nBitte versuche es erneut.","trial_activated":"━━━━━━━━━━━━━━━━━━━━\\n🎁 Vollzugang für 7 Tage aktiviert.\\n\\nDeine tägliche Prognose kommt um 20:00 Uhr Ortszeit.","btn_chart":"🌌 Mein Horoskop","btn_forecast":"🔮 Prognose heute","btn_tomorrow":"🌙 Morgen","btn_ask":"💬 Mein Horoskop fragen","btn_rel":"❤️ Beziehungen","btn_career":"💼 Karriere","btn_money":"💰 Finanzen","btn_sub":"⭐ Abo","btn_language":"🌐 Sprache","language_title":"🌐 SPRACHE","language_choose":"Wähle die Sprache der Oberfläche:","language_saved":"✅ Sprache auf Deutsch geändert.","btn_menu":"⬅️ Hauptmenü","status_trial":"Probezeit","status_prem":"Premium","status_exp":"Abgelaufen","days_left":"noch {days} Tag(e)","limit_reached":"Das tägliche KI-Limit wurde erreicht.\\n\\nKomm morgen wieder.","paywall_msg":"🔒 Der kostenlose Zugang ist beendet.\\n\\nWähle ein Abo, um Prognosen und Fragen zu deinem Horoskop fortzusetzen.","ask_prompt":"💬 MEIN HOROSKOP FRAGEN\\n\\nStelle eine Frage über dich, Beziehungen, Arbeit oder eine wichtige Entscheidung.","analyzing":"🧠 Dein Horoskop wird analysiert...","subscription_title":"⭐ AURA ASTRO — ABO","subscription_choose":"Wähle deinen Zugang:","plan_1m_btn":"⭐ 1 Monat — 199 Stars","plan_3m_btn":"✨ 3 Monate — 450 Stars","plan_6m_btn":"⚡ 6 Monate — 800 Stars","plan_1y_btn":"👑 1 Jahr — 1200 Stars","payment_success":"🎉 Zugang für {days} Tage aktiviert!","payment_already_processed":"✅ Diese Zahlung wurde bereits verarbeitet.","chart_title":"🌌 DEIN GEBURTSHOROSKOP","chart_title_short":"🌌 GEBURTSHOROSKOP","sun":"Sonne","moon":"Mond","ascendant":"Aszendent","mc":"MC","mercury":"Merkur","venus":"Venus","mars":"Mars","jupiter":"Jupiter","saturn":"Saturn","uranus":"Uranus","neptune":"Neptun","pluto":"Pluto","meaning_sun":"Persönlichkeit, Wille und Lebensenergie","meaning_moon":"Emotionen, innere Bedürfnisse und Sicherheitsgefühl","meaning_ascendant":"Außenwirkung, erster Eindruck und Ausdrucksweise","meaning_mc":"Karriere, Status und berufliche Richtung","meaning_mercury":"Denken, Kommunikation und Informationsverarbeitung","meaning_venus":"Liebe, Anziehung, Werte und persönlicher Geschmack","meaning_mars":"Handlung, Energie, Antrieb und Durchsetzungsvermögen","meaning_jupiter":"Wachstum, Überzeugungen, Chancen und Horizonterweiterung","meaning_saturn":"Disziplin, Grenzen, Verantwortung und Reife","meaning_uranus":"Freiheit, Veränderung und Unabhängigkeit","meaning_neptune":"Intuition, Ideale, Fantasie und Sensibilität","meaning_pluto":"Tiefe Veränderung, Kraft und innere Transformation","location":"Geburtsort","tomorrow_title":"✨ PROGNOSE FÜR MORGEN","forecast_title":"🔮 PROGNOSE","trial":"Probezeit","premium":"Premium","expired":"Zugang abgelaufen","house":"Haus","retrograde":"rückläufig","direct":"direkt","aspects_title":"🔺 WICHTIGE NATALASPEKTE","no_aspects":"Keine engen Hauptaspekte gefunden.","natal_data_title":"📊 WICHTIGE INDIKATOREN","degree_hint":"Der Grad verfeinert die Position des Planeten im Zeichen","house_hint":"Das Haus zeigt den Lebensbereich, in dem sich die Energie ausdrückt","aspect_hint":"Ein Aspekt beschreibt die Wechselwirkung zwischen zwei Planeten","retro_hint":"In der traditionellen Astrologie wird Rückläufigkeit mit stärker innerer Verarbeitung eines Themas verbunden."},
-    "es": {}, "fr": {}, "it": {}, "pt": {}, "tr": {}, "uk": {}
-}
-
-# Build the remaining languages from concise translations of the same complete key set.
-_BASE_TRANSLATIONS = {
-"es": {"language_saved":"✅ Idioma cambiado a español.","language_title":"🌐 IDIOMA","language_choose":"Elige el idioma de la interfaz:","btn_language":"🌐 Idioma","btn_menu":"⬅️ Menú principal","btn_chart":"🌌 Mi carta","btn_forecast":"🔮 Pronóstico de hoy","btn_tomorrow":"🌙 Mañana","btn_ask":"💬 Preguntar a mi carta","btn_rel":"❤️ Relaciones","btn_career":"💼 Carrera","btn_money":"💰 Dinero","btn_sub":"⭐ Suscripción","status_trial":"Prueba","status_prem":"Premium","status_exp":"Caducado","chart_title":"🌌 TU CARTA NATAL","chart_title_short":"🌌 CARTA NATAL","sun":"Sol","moon":"Luna","ascendant":"Ascendente","mc":"MC","mercury":"Mercurio","venus":"Venus","mars":"Marte","jupiter":"Júpiter","saturn":"Saturno","uranus":"Urano","neptune":"Neptuno","pluto":"Plutón","location":"Lugar de nacimiento","house":"casa","retrograde":"retrógrado","direct":"directo","forecast_title":"🔮 PRONÓSTICO","tomorrow_title":"✨ PRONÓSTICO DE MAÑANA","trial":"Prueba","premium":"Premium","expired":"Acceso caducado","aspects_title":"🔺 ASPECTOS NATALES CLAVE","no_aspects":"No se detectaron aspectos mayores estrechos.","natal_data_title":"📊 INDICADORES CLAVE","analyzing":"🧠 Analizando tu carta..."},
-"fr": {"language_saved":"✅ Langue changée en français.","language_title":"🌐 LANGUE","language_choose":"Choisissez la langue de l’interface :","btn_language":"🌐 Langue","btn_menu":"⬅️ Menu principal","btn_chart":"🌌 Ma carte","btn_forecast":"🔮 Prévision du jour","btn_tomorrow":"🌙 Demain","btn_ask":"💬 Interroger ma carte","btn_rel":"❤️ Relations","btn_career":"💼 Carrière","btn_money":"💰 Finances","btn_sub":"⭐ Abonnement","status_trial":"Essai","status_prem":"Premium","status_exp":"Expiré","chart_title":"🌌 VOTRE CARTE NATALE","chart_title_short":"🌌 CARTE NATALE","sun":"Soleil","moon":"Lune","ascendant":"Ascendant","mc":"MC","mercury":"Mercure","venus":"Vénus","mars":"Mars","jupiter":"Jupiter","saturn":"Saturne","uranus":"Uranus","neptune":"Neptune","pluto":"Pluton","location":"Lieu de naissance","house":"maison","retrograde":"rétrograde","direct":"direct","forecast_title":"🔮 PRÉVISION","tomorrow_title":"✨ PRÉVISION DE DEMAIN","trial":"Essai","premium":"Premium","expired":"Accès expiré","aspects_title":"🔺 ASPECTS NATAUX CLÉS","no_aspects":"Aucun aspect majeur serré détecté.","natal_data_title":"📊 INDICATEURS CLÉS","analyzing":"🧠 Analyse de votre carte..."},
-"it": {"language_saved":"✅ Lingua cambiata in italiano.","language_title":"🌐 LINGUA","language_choose":"Scegli la lingua dell’interfaccia:","btn_language":"🌐 Lingua","btn_menu":"⬅️ Menu principale","btn_chart":"🌌 La mia carta","btn_forecast":"🔮 Previsione di oggi","btn_tomorrow":"🌙 Domani","btn_ask":"💬 Chiedi alla mia carta","btn_rel":"❤️ Relazioni","btn_career":"💼 Carriera","btn_money":"💰 Finanze","btn_sub":"⭐ Abbonamento","status_trial":"Prova","status_prem":"Premium","status_exp":"Scaduto","chart_title":"🌌 LA TUA CARTA NATALE","chart_title_short":"🌌 CARTA NATALE","sun":"Sole","moon":"Luna","ascendant":"Ascendente","mc":"MC","mercury":"Mercurio","venus":"Venere","mars":"Marte","jupiter":"Giove","saturn":"Saturno","uranus":"Urano","neptune":"Nettuno","pluto":"Plutone","location":"Luogo di nascita","house":"casa","retrograde":"retrogrado","direct":"diretto","forecast_title":"🔮 PREVISIONE","tomorrow_title":"✨ PREVISIONE DI DOMANI","trial":"Prova","premium":"Premium","expired":"Accesso scaduto","aspects_title":"🔺 ASPETTI NATALI CHIAVE","no_aspects":"Nessun aspetto maggiore stretto rilevato.","natal_data_title":"📊 INDICATORI CHIAVE","analyzing":"🧠 Analizzo la tua carta..."},
-"pt": {"language_saved":"✅ Idioma alterado para português.","language_title":"🌐 IDIOMA","language_choose":"Escolha o idioma da interface:","btn_language":"🌐 Idioma","btn_menu":"⬅️ Menu principal","btn_chart":"🌌 Meu mapa","btn_forecast":"🔮 Previsão de hoje","btn_tomorrow":"🌙 Amanhã","btn_ask":"💬 Perguntar ao meu mapa","btn_rel":"❤️ Relacionamentos","btn_career":"💼 Carreira","btn_money":"💰 Finanças","btn_sub":"⭐ Assinatura","status_trial":"Teste","status_prem":"Premium","status_exp":"Expirado","chart_title":"🌌 SEU MAPA NATAL","chart_title_short":"🌌 MAPA NATAL","sun":"Sol","moon":"Lua","ascendant":"Ascendente","mc":"MC","mercury":"Mercúrio","venus":"Vênus","mars":"Marte","jupiter":"Júpiter","saturn":"Saturno","uranus":"Urano","neptune":"Netuno","pluto":"Plutão","location":"Local de nascimento","house":"casa","retrograde":"retrógrado","direct":"direto","forecast_title":"🔮 PREVISÃO","tomorrow_title":"✨ PREVISÃO DE AMANHÃ","trial":"Teste","premium":"Premium","expired":"Acesso expirado","aspects_title":"🔺 ASPECTOS NATAIS PRINCIPAIS","no_aspects":"Nenhum aspecto maior próximo foi detectado.","natal_data_title":"📊 INDICADORES PRINCIPAIS","analyzing":"🧠 Analisando seu mapa..."},
-"tr": {"language_saved":"✅ Dil Türkçe olarak değiştirildi.","language_title":"🌐 DİL","language_choose":"Arayüz dilini seçin:","btn_language":"🌐 Dil","btn_menu":"⬅️ Ana menü","btn_chart":"🌌 Haritam","btn_forecast":"🔮 Bugünün yorumu","btn_tomorrow":"🌙 Yarın","btn_ask":"💬 Haritama sor","btn_rel":"❤️ İlişkiler","btn_career":"💼 Kariyer","btn_money":"💰 Finans","btn_sub":"⭐ Abonelik","status_trial":"Deneme","status_prem":"Premium","status_exp":"Süresi doldu","chart_title":"🌌 DOĞUM HARİTANIZ","chart_title_short":"🌌 DOĞUM HARİTASI","sun":"Güneş","moon":"Ay","ascendant":"Yükselen","mc":"MC","mercury":"Merkür","venus":"Venüs","mars":"Mars","jupiter":"Jüpiter","saturn":"Satürn","uranus":"Uranüs","neptune":"Neptün","pluto":"Plüton","location":"Doğum yeri","house":"ev","retrograde":"retrograd","direct":"direkt","forecast_title":"🔮 YORUM","tomorrow_title":"✨ YARININ YORUMU","trial":"Deneme","premium":"Premium","expired":"Erişim sona erdi","aspects_title":"🔺 ÖNEMLİ NATAL AÇILAR","no_aspects":"Yakın majör açı tespit edilmedi.","natal_data_title":"📊 TEMEL GÖSTERGELER","analyzing":"🧠 Haritanız analiz ediliyor..."},
-"uk": {"language_saved":"✅ Мову змінено на українську.","language_title":"🌐 МОВА","language_choose":"Оберіть мову інтерфейсу:","btn_language":"🌐 Мова","btn_menu":"⬅️ Головне меню","btn_chart":"🌌 Моя карта","btn_forecast":"🔮 Прогноз на сьогодні","btn_tomorrow":"🌙 Завтра","btn_ask":"💬 Запитати карту","btn_rel":"❤️ Стосунки","btn_career":"💼 Кар’єра","btn_money":"💰 Фінанси","btn_sub":"⭐ Підписка","status_trial":"Пробний період","status_prem":"Преміум","status_exp":"Завершено","chart_title":"🌌 ВАША НАТАЛЬНА КАРТА","chart_title_short":"🌌 НАТАЛЬНА КАРТА","sun":"Сонце","moon":"Місяць","ascendant":"Асцендент","mc":"MC","mercury":"Меркурій","venus":"Венера","mars":"Марс","jupiter":"Юпітер","saturn":"Сатурн","uranus":"Уран","neptune":"Нептун","pluto":"Плутон","location":"Місце народження","house":"дім","retrograde":"ретроградна","direct":"пряма","forecast_title":"🔮 ПРОГНОЗ","tomorrow_title":"✨ ПРОГНОЗ НА ЗАВТРА","trial":"Пробний період","premium":"Преміум","expired":"Доступ завершено","aspects_title":"🔺 КЛЮЧОВІ НАТАЛЬНІ АСПЕКТИ","no_aspects":"Тісних основних аспектів не виявлено.","natal_data_title":"📊 ОСНОВНІ ПОКАЗНИКИ","analyzing":"🧠 Аналізую вашу карту..."}
-}
-
-# Merge translated overrides; every missing key falls back to English.
-for _lang, _data in EXTRA_TEXTS.items():
-    TEXTS[_lang] = dict(TEXTS["en"])
-    TEXTS[_lang].update(_data)
-for _lang, _data in _BASE_TRANSLATIONS.items():
-    TEXTS[_lang] = dict(TEXTS.get(_lang, TEXTS["en"]))
-    TEXTS[_lang].update(_data)
-
+TEXTS = {'ru': {'welcome_back': '✨ С возвращением, {name}!\n\nСтатус: {status}\n\nЧто хотите изучить?',
+        'start_intro': '✨ Добро пожаловать в Aura Astro.\n'
+                       '\n'
+                       'Ваш персональный астрологический проводник объединяет точные расчёты Swiss '
+                       'Ephemeris и психологическую интерпретацию.\n'
+                       '\n'
+                       'Давайте построим вашу натальную карту.\n'
+                       '\n'
+                       'Как к вам обращаться?',
+        'ask_birth_date': 'Укажите дату рождения в формате `ГГГГ-ММ-ДД`.\n\nНапример: `1994-08-23`',
+        'invalid_date': '⚠️ Неверный формат даты.\n'
+                        '\n'
+                        'Используйте `ГГГГ-ММ-ДД`.\n'
+                        'Например: `1995-11-04`.',
+        'ask_birth_time': 'В какое время вы родились?\n'
+                          '\n'
+                          'Используйте 24-часовой формат `ЧЧ:ММ`.\n'
+                          'Например: `14:30`.\n'
+                          '\n'
+                          'Если точное время неизвестно, напишите `12:00`.',
+        'invalid_time': '⚠️ Неверный формат времени.\n'
+                        '\n'
+                        'Введите время в формате `ЧЧ:ММ`.\n'
+                        'Например: `08:45`.',
+        'ask_city': 'Где вы родились?\n\nУкажите город и страну.\nНапример: `Москва, Россия`.',
+        'calc_coords': '🔭 Рассчитываю координаты и натальную карту...',
+        'city_not_found': '⚠️ Город не найден.\n\nПопробуйте написать точнее: `Город, Страна`.',
+        'tz_error': '⚠️ Не удалось определить исторический часовой пояс.\n'
+                    '\n'
+                    'Попробуйте указать ближайший крупный город.',
+        'calc_error': '⚠️ Произошла ошибка при расчёте карты.\n\nПожалуйста, попробуйте ещё раз.',
+        'trial_activated': '━━━━━━━━━━━━━━━━━━━━\n'
+                           '🎁 Полный доступ активирован на 7 дней.\n'
+                           '\n'
+                           'Ежедневный прогноз будет приходить в 20:00 по местному времени.',
+        'btn_chart': '🌌 Моя карта',
+        'btn_forecast': '🔮 Прогноз на сегодня',
+        'btn_tomorrow': '🌙 Завтра',
+        'btn_ask': '💬 Спросить карту',
+        'btn_rel': '❤️ Отношения',
+        'btn_career': '💼 Карьера',
+        'btn_money': '💰 Финансы',
+        'btn_sub': '⭐ Подписка',
+        'btn_language': '🌐 Язык',
+        'language_title': '🌐 ВЫБОР ЯЗЫКА',
+        'language_choose': 'Выберите язык интерфейса:',
+        'language_saved': '✅ Язык изменён на русский.',
+        'btn_menu': '⬅️ Главное меню',
+        'status_trial': 'Пробный период',
+        'status_prem': 'Премиум',
+        'status_exp': 'Истёк',
+        'days_left': 'осталось {days} дн.',
+        'limit_reached': 'Вы исчерпали лимит запросов к карте на сегодня.\n\nВозвращайтесь завтра.',
+        'paywall_msg': '🔒 Бесплатный доступ завершён.\n'
+                       '\n'
+                       'Оформите подписку, чтобы продолжить получать прогнозы и задавать вопросы '
+                       'натальной карте.',
+        'ask_prompt': '💬 СПРОСИТЬ КАРТУ\n'
+                      '\n'
+                      'Задайте вопрос о себе, работе, отношениях или важном выборе.\n'
+                      '\n'
+                      'Например:\n'
+                      '«Почему мне сложно доверять людям?»',
+        'analyzing': '🧠 Анализирую вашу карту...',
+        'subscription_title': '⭐ AURA ASTRO — ПОДПИСКА',
+        'subscription_choose': 'Выберите план доступа:',
+        'plan_1m_btn': '⭐ 1 месяц — 199 Stars',
+        'plan_3m_btn': '✨ 3 месяца — 450 Stars',
+        'plan_6m_btn': '⚡ 6 месяцев — 800 Stars',
+        'plan_1y_btn': '👑 1 год — 1200 Stars',
+        'payment_success': '🎉 Доступ активирован на {days} дней!',
+        'payment_already_processed': '✅ Этот платёж уже был обработан.',
+        'chart_title': '🌌 ВАША НАТАЛЬНАЯ КАРТА',
+        'chart_title_short': '🌌 НАТАЛЬНАЯ КАРТА',
+        'sun': 'Солнце',
+        'moon': 'Луна',
+        'ascendant': 'Асцендент',
+        'mc': 'MC',
+        'mercury': 'Меркурий',
+        'venus': 'Венера',
+        'mars': 'Марс',
+        'jupiter': 'Юпитер',
+        'saturn': 'Сатурн',
+        'uranus': 'Уран',
+        'neptune': 'Нептун',
+        'pluto': 'Плутон',
+        'meaning_sun': 'личность, воля и жизненная энергия',
+        'meaning_moon': 'эмоции, внутренние потребности и чувство безопасности',
+        'meaning_ascendant': 'внешний образ, первое впечатление и способ проявляться',
+        'meaning_mc': 'карьера, статус и направление профессиональной реализации',
+        'meaning_mercury': 'мышление, речь и способ обрабатывать информацию',
+        'meaning_venus': 'любовь, симпатии, ценности и личный вкус',
+        'meaning_mars': 'действие, энергия, напор и способ добиваться своего',
+        'meaning_jupiter': 'рост, убеждения, возможности и расширение горизонтов',
+        'meaning_saturn': 'дисциплина, границы, ответственность и зрелость',
+        'meaning_uranus': 'свобода, перемены и стремление к независимости',
+        'meaning_neptune': 'интуиция, идеалы, воображение и чувствительность',
+        'meaning_pluto': 'глубокие изменения, сила и внутренние трансформации',
+        'location': 'Место рождения',
+        'tomorrow_title': '✨ ПРОГНОЗ НА ЗАВТРА',
+        'forecast_title': '🔮 ПРОГНОЗ',
+        'trial': 'Пробный период',
+        'premium': 'Премиум',
+        'expired': 'Доступ завершён',
+        'house': 'дом',
+        'retrograde': 'ретроградная',
+        'direct': 'прямая',
+        'aspects_title': '🔺 КЛЮЧЕВЫЕ АСПЕКТЫ',
+        'no_aspects': 'Тесных основных аспектов не обнаружено.',
+        'natal_data_title': '📊 ОСНОВНЫЕ ПОКАЗАТЕЛИ',
+        'degree_hint': 'градус уточняет положение планеты внутри знака',
+        'house_hint': 'дом показывает сферу жизни, где проявляется энергия',
+        'aspect_hint': 'аспект показывает взаимодействие двух планет',
+        'retro_hint': 'ретроградность в астрологической традиции связывается с более внутренней '
+                      'переработкой темы'},
+ 'en': {'welcome_back': '✨ Welcome back, {name}!\n'
+                        '\n'
+                        'Status: {status}\n'
+                        '\n'
+                        'What would you like to explore?',
+        'start_intro': '✨ Welcome to Aura Astro.\n'
+                       '\n'
+                       'Your personal astrology companion combines Swiss Ephemeris calculations '
+                       'with psychological interpretation.\n'
+                       '\n'
+                       "Let's build your personal chart.\n"
+                       '\n'
+                       'What is your preferred name?',
+        'ask_birth_date': 'What is your date of birth?\n\nUse `YYYY-MM-DD`.\nExample: `1994-08-23`',
+        'invalid_date': '⚠️ Invalid date.\n\nPlease use `YYYY-MM-DD`.',
+        'ask_birth_time': 'What time were you born?\n'
+                          '\n'
+                          'Use 24-hour format `HH:MM`.\n'
+                          'Example: `14:30`.\n'
+                          '\n'
+                          'If unknown, type `12:00`.',
+        'invalid_time': '⚠️ Invalid time.\n\nPlease use `HH:MM`.',
+        'ask_city': 'Where were you born?\n\nEnter city and country.\nExample: `London, UK`.',
+        'calc_coords': '🔭 Calculating coordinates and natal chart...',
+        'city_not_found': '⚠️ Location not found.\n\nTry again as `City, Country`.',
+        'tz_error': "⚠️ Couldn't resolve the historical timezone.\n\nTry a nearby larger city.",
+        'calc_error': '⚠️ Something went wrong calculating the chart.\n\nPlease try again.',
+        'trial_activated': '━━━━━━━━━━━━━━━━━━━━\n'
+                           '🎁 7-Day Full Access Activated.\n'
+                           '\n'
+                           'Your daily forecast will arrive at 20:00 local time.',
+        'btn_chart': '🌌 My Chart',
+        'btn_forecast': "🔮 Today's Forecast",
+        'btn_tomorrow': '🌙 Tomorrow',
+        'btn_ask': '💬 Ask My Chart',
+        'btn_rel': '❤️ Relationships',
+        'btn_career': '💼 Career',
+        'btn_money': '💰 Money',
+        'btn_sub': '⭐ Subscription',
+        'btn_language': '🌐 Language',
+        'language_title': '🌐 LANGUAGE',
+        'language_choose': 'Choose your interface language:',
+        'language_saved': '✅ Language changed to English.',
+        'btn_menu': '⬅️ Main Menu',
+        'status_trial': 'Trial',
+        'status_prem': 'Premium',
+        'status_exp': 'Expired',
+        'days_left': '{days} day(s) left',
+        'limit_reached': "You've reached today's AI guidance limit.\n\nCome back tomorrow.",
+        'paywall_msg': '🔒 Your free access has ended.\n'
+                       '\n'
+                       'Choose a subscription to continue receiving forecasts and asking your '
+                       'chart.',
+        'ask_prompt': '💬 ASK MY CHART\n'
+                      '\n'
+                      'Ask a question about yourself, relationships, work, or an important '
+                      'decision.\n'
+                      '\n'
+                      'Example:\n'
+                      '"Why do I find it hard to trust people?"',
+        'analyzing': '🧠 Analyzing your chart...',
+        'subscription_title': '⭐ AURA ASTRO — MEMBERSHIP',
+        'subscription_choose': 'Choose your access plan:',
+        'plan_1m_btn': '⭐ 1 Month — 199 Stars',
+        'plan_3m_btn': '✨ 3 Months — 450 Stars',
+        'plan_6m_btn': '⚡ 6 Months — 800 Stars',
+        'plan_1y_btn': '👑 1 Year — 1200 Stars',
+        'payment_success': '🎉 Access activated for {days} days!',
+        'payment_already_processed': '✅ This payment has already been processed.',
+        'chart_title': '🌌 YOUR NATAL CHART',
+        'chart_title_short': '🌌 NATAL CHART',
+        'sun': 'Sun',
+        'moon': 'Moon',
+        'ascendant': 'Ascendant',
+        'mc': 'MC',
+        'mercury': 'Mercury',
+        'venus': 'Venus',
+        'mars': 'Mars',
+        'jupiter': 'Jupiter',
+        'saturn': 'Saturn',
+        'uranus': 'Uranus',
+        'neptune': 'Neptune',
+        'pluto': 'Pluto',
+        'meaning_sun': 'personality, will and life energy',
+        'meaning_moon': 'emotions, inner needs and sense of security',
+        'meaning_ascendant': 'outer image, first impression and way of expressing yourself',
+        'meaning_mc': 'career, status and professional direction',
+        'meaning_mercury': 'thinking, communication and information processing',
+        'meaning_venus': 'love, attraction, values and personal taste',
+        'meaning_mars': 'action, energy, drive and determination',
+        'meaning_jupiter': 'growth, beliefs, opportunities and expansion',
+        'meaning_saturn': 'discipline, boundaries, responsibility and maturity',
+        'meaning_uranus': 'freedom, change and independence',
+        'meaning_neptune': 'intuition, ideals, imagination and sensitivity',
+        'meaning_pluto': 'deep change, power and inner transformation',
+        'location': 'Birth place',
+        'tomorrow_title': "✨ TOMORROW'S ALIGNMENT",
+        'forecast_title': '🔮 FORECAST',
+        'trial': 'Trial',
+        'premium': 'Premium',
+        'expired': 'Access expired',
+        'house': 'house',
+        'retrograde': 'retrograde',
+        'direct': 'direct',
+        'aspects_title': '🔺 KEY NATAL ASPECTS',
+        'no_aspects': 'No tight major aspects detected.',
+        'natal_data_title': '📊 KEY INDICATORS',
+        'degree_hint': "the degree refines the planet's position within its sign",
+        'house_hint': 'the house shows the life area where the energy is expressed',
+        'aspect_hint': 'an aspect describes the interaction between two planets',
+        'retro_hint': 'in traditional astrology, retrograde motion is associated with more '
+                      'internal processing of a theme'},
+ 'es': {'welcome_back': '✨ ¡Bienvenido de nuevo, {name}!\\n\\nEstado: {status}\\n\\n¿Qué te '
+                        'gustaría explorar?',
+        'start_intro': '✨ Bienvenido a Aura Astro.\\n\\nTu guía astrológica personal combina '
+                       'cálculos precisos de Swiss Ephemeris con una interpretación '
+                       'psicológica.\\n\\nVamos a construir tu carta natal.\\n\\n¿Cómo te gustaría '
+                       'que te llamemos?',
+        'ask_birth_date': '¿Cuál es tu fecha de nacimiento?\\n\\nUsa el formato '
+                          '`AAAA-MM-DD`.\\nEjemplo: `1994-08-23`',
+        'invalid_date': '⚠️ Fecha no válida.\\n\\nUsa el formato `AAAA-MM-DD`.',
+        'ask_birth_time': '¿A qué hora naciste?\\n\\nUsa el formato de 24 horas '
+                          '`HH:MM`.\\nEjemplo: `14:30`.\\n\\nSi no la conoces, escribe `12:00`.',
+        'invalid_time': '⚠️ Hora no válida.\\n\\nUsa el formato `HH:MM`.',
+        'ask_city': '¿Dónde naciste?\\n\\nIndica ciudad y país.\\nEjemplo: `Madrid, España`.',
+        'calc_coords': '🔭 Calculando las coordenadas y la carta natal...',
+        'city_not_found': '⚠️ No se encontró la ubicación.\\n\\nInténtalo de nuevo como `Ciudad, '
+                          'País`.',
+        'tz_error': '⚠️ No se pudo determinar la zona horaria histórica.\\n\\nPrueba con una '
+                    'ciudad grande cercana.',
+        'calc_error': '⚠️ Ocurrió un error al calcular la carta.\\n\\nInténtalo de nuevo.',
+        'trial_activated': '━━━━━━━━━━━━━━━━━━━━\\n🎁 Acceso completo activado durante 7 '
+                           'días.\\n\\nTu pronóstico diario llegará a las 20:00, hora local.',
+        'btn_chart': '🌌 Mi carta',
+        'btn_forecast': '🔮 Pronóstico de hoy',
+        'btn_tomorrow': '🌙 Mañana',
+        'btn_ask': '💬 Preguntar a mi carta',
+        'btn_rel': '❤️ Relaciones',
+        'btn_career': '💼 Carrera',
+        'btn_money': '💰 Finanzas',
+        'btn_sub': '⭐ Suscripción',
+        'btn_language': '🌐 Idioma',
+        'language_title': '🌐 IDIOMA',
+        'language_choose': 'Elige el idioma de la interfaz:',
+        'language_saved': '✅ Idioma cambiado a español.',
+        'btn_menu': '⬅️ Menú principal',
+        'status_trial': 'Prueba',
+        'status_prem': 'Premium',
+        'status_exp': 'Caducado',
+        'days_left': 'quedan {days} días',
+        'limit_reached': 'Has alcanzado el límite diario de consultas a la guía AI.\\n\\nVuelve '
+                         'mañana.',
+        'paywall_msg': '🔒 Tu acceso gratuito ha terminado.\\n\\nElige una suscripción para seguir '
+                       'recibiendo pronósticos y haciendo preguntas a tu carta.',
+        'ask_prompt': '💬 PREGUNTAR A MI CARTA\\n\\nHaz una pregunta sobre ti, tus relaciones, el '
+                      'trabajo o una decisión importante.\\n\\nEjemplo:\\n«¿Por qué me cuesta '
+                      'confiar en las personas?»',
+        'analyzing': '🧠 Analizando tu carta...',
+        'subscription_title': '⭐ AURA ASTRO — SUSCRIPCIÓN',
+        'subscription_choose': 'Elige tu plan de acceso:',
+        'plan_1m_btn': '⭐ 1 mes — 199 Stars',
+        'plan_3m_btn': '✨ 3 meses — 450 Stars',
+        'plan_6m_btn': '⚡ 6 meses — 800 Stars',
+        'plan_1y_btn': '👑 1 año — 1200 Stars',
+        'payment_success': '🎉 Acceso activado durante {days} días!',
+        'payment_already_processed': '✅ Este pago ya ha sido procesado.',
+        'chart_title': '🌌 TU CARTA NATAL',
+        'chart_title_short': '🌌 CARTA NATAL',
+        'sun': 'Sol',
+        'moon': 'Luna',
+        'ascendant': 'Ascendente',
+        'mc': 'MC',
+        'mercury': 'Mercurio',
+        'venus': 'Venus',
+        'mars': 'Marte',
+        'jupiter': 'Júpiter',
+        'saturn': 'Saturno',
+        'uranus': 'Urano',
+        'neptune': 'Neptuno',
+        'pluto': 'Plutón',
+        'meaning_sun': 'personalidad, voluntad y energía vital',
+        'meaning_moon': 'emociones, necesidades internas y sensación de seguridad',
+        'meaning_ascendant': 'imagen externa, primera impresión y forma de expresarte',
+        'meaning_mc': 'carrera, estatus y dirección profesional',
+        'meaning_mercury': 'pensamiento, comunicación y procesamiento de información',
+        'meaning_venus': 'amor, atracción, valores y gusto personal',
+        'meaning_mars': 'acción, energía, impulso y determinación',
+        'meaning_jupiter': 'crecimiento, creencias, oportunidades y expansión',
+        'meaning_saturn': 'disciplina, límites, responsabilidad y madurez',
+        'meaning_uranus': 'libertad, cambios e independencia',
+        'meaning_neptune': 'intuición, ideales, imaginación y sensibilidad',
+        'meaning_pluto': 'cambios profundos, poder y transformación interior',
+        'location': 'Lugar de nacimiento',
+        'tomorrow_title': '✨ ALINEACIÓN DE MAÑANA',
+        'forecast_title': '🔮 PRONÓSTICO',
+        'trial': 'Prueba',
+        'premium': 'Premium',
+        'expired': 'Acceso caducado',
+        'house': 'casa',
+        'retrograde': 'retrógrado',
+        'direct': 'directo',
+        'aspects_title': '🔺 ASPECTOS NATALES CLAVE',
+        'no_aspects': 'No se han detectado aspectos mayores estrechos.',
+        'natal_data_title': '📊 INDICADORES CLAVE',
+        'degree_hint': 'el grado precisa la posición del planeta dentro del signo',
+        'house_hint': 'la casa muestra el área de vida donde se expresa la energía',
+        'aspect_hint': 'un aspecto describe la interacción entre dos planetas',
+        'retro_hint': 'en la tradición astrológica, el movimiento retrógrado se asocia con un '
+                      'procesamiento más interno de un tema'}}
 
 
 def normalize_lang(lang: Optional[str]) -> str:
-    code = (lang or "").lower().replace("_", "-").strip()
-    if code.startswith("ru"): return "ru"
-    if code.startswith("de"): return "de"
-    if code.startswith("es"): return "es"
-    if code.startswith("fr"): return "fr"
-    if code.startswith("it"): return "it"
-    if code.startswith("pt"): return "pt"
-    if code.startswith("tr"): return "tr"
-    if code.startswith("uk"): return "uk"
+    value = (lang or "").lower().replace("_", "-")
+    if value.startswith("ru"):
+        return "ru"
+    if value.startswith("es"):
+        return "es"
     return "en"
 
 
@@ -467,15 +472,11 @@ ZODIAC_EN = [
     "Sagittarius ♐", "Capricorn ♑", "Aquarius ♒", "Pisces ♓",
 ]
 
-ZODIAC_LOCALIZED = {
- "de":["Widder ♈","Stier ♉","Zwillinge ♊","Krebs ♋","Löwe ♌","Jungfrau ♍","Waage ♎","Skorpion ♏","Schütze ♐","Steinbock ♑","Wassermann ♒","Fische ♓"],
- "es":["Aries ♈","Tauro ♉","Géminis ♊","Cáncer ♋","Leo ♌","Virgo ♍","Libra ♎","Escorpio ♏","Sagitario ♐","Capricornio ♑","Acuario ♒","Piscis ♓"],
- "fr":["Bélier ♈","Taureau ♉","Gémeaux ♊","Cancer ♋","Lion ♌","Vierge ♍","Balance ♎","Scorpion ♏","Sagittaire ♐","Capricorne ♑","Verseau ♒","Poissons ♓"],
- "it":["Ariete ♈","Toro ♉","Gemelli ♊","Cancro ♋","Leone ♌","Vergine ♍","Bilancia ♎","Scorpione ♏","Sagittario ♐","Capricorno ♑","Acquario ♒","Pesci ♓"],
- "pt":["Áries ♈","Touro ♉","Gêmeos ♊","Câncer ♋","Leão ♌","Virgem ♍","Libra ♎","Escorpião ♏","Sagitário ♐","Capricórnio ♑","Aquário ♒","Peixes ♓"],
- "tr":["Koç ♈","Boğa ♉","İkizler ♊","Yengeç ♋","Aslan ♌","Başak ♍","Terazi ♎","Akrep ♏","Yay ♐","Oğlak ♑","Kova ♒","Balık ♓"],
- "uk":["Овен ♈","Телець ♉","Близнюки ♊","Рак ♋","Лев ♌","Діва ♍","Терези ♎","Скорпіон ♏","Стрілець ♐","Козеріг ♑","Водолій ♒","Риби ♓"],
-}
+ZODIAC_ES = [
+    "Aries ♈", "Tauro ♉", "Géminis ♊", "Cáncer ♋",
+    "Leo ♌", "Virgo ♍", "Libra ♎", "Escorpio ♏",
+    "Sagitario ♐", "Capricornio ♑", "Acuario ♒", "Piscis ♓",
+]
 
 SIGN_TRAITS = {
     "ru": [
@@ -506,20 +507,22 @@ SIGN_TRAITS = {
         "independence, originality, freedom of thought",
         "intuition, empathy, imagination",
     ],
+    "es": [
+        "iniciativa, franqueza, independencia",
+        "estabilidad, sensualidad, practicidad",
+        "curiosidad, flexibilidad, comunicación",
+        "emoción, cuidado, necesidad de seguridad",
+        "autoexpresión, confianza, creatividad",
+        "análisis, practicidad, atención a los detalles",
+        "armonía, diplomacia, equilibrio",
+        "profundidad, intensidad, percepción",
+        "expansión, sentido, libertad",
+        "objetivos, estructura, responsabilidad",
+        "independencia, originalidad, libertad de pensamiento",
+        "intuición, empatía, imaginación",
+    ],
 }
 
-
-SIGN_TRAITS.update({
- "de":["Initiative, Direktheit, Unabhängigkeit","Stabilität, Sinnlichkeit, Praktikabilität","Neugier, Flexibilität, Kommunikation","Emotionen, Fürsorge, Sicherheitsbedürfnis","Selbstausdruck, Selbstvertrauen, Kreativität","Analyse, Praktikabilität, Detailgenauigkeit","Harmonie, Diplomatie, Balance","Tiefe, Intensität, Wahrnehmung","Horizonterweiterung, Sinn, Freiheit","Ziele, Struktur, Verantwortung","Unabhängigkeit, Originalität, freies Denken","Intuition, Empathie, Vorstellungskraft"],
- "es":["iniciativa, franqueza, independencia","estabilidad, sensualidad, practicidad","curiosidad, flexibilidad, comunicación","emoción, cuidado, necesidad de seguridad","expresión, confianza, creatividad","análisis, practicidad, atención al detalle","armonía, diplomacia, equilibrio","profundidad, intensidad, percepción","expansión, sentido, libertad","metas, estructura, responsabilidad","independencia, originalidad, libertad de pensamiento","intuición, empatía, imaginación"],
- "fr":["initiative, franchise, indépendance","stabilité, sensualité, pragmatisme","curiosité, flexibilité, communication","émotion, soin, besoin de sécurité","expression, confiance, créativité","analyse, pragmatisme, attention aux détails","harmonie, diplomatie, équilibre","profondeur, intensité, perception","expansion, sens, liberté","objectifs, structure, responsabilité","indépendance, originalité, liberté de pensée","intuition, empathie, imagination"],
- "it":["iniziativa, franchezza, indipendenza","stabilità, sensualità, praticità","curiosità, flessibilità, comunicazione","emozione, cura, bisogno di sicurezza","espressione, fiducia, creatività","analisi, praticità, attenzione ai dettagli","armonia, diplomazia, equilibrio","profondità, intensità, percezione","espansione, significato, libertà","obiettivi, struttura, responsabilità","indipendenza, originalità, libertà di pensiero","intuizione, empatia, immaginazione"],
- "pt":["iniciativa, franqueza, independência","estabilidade, sensualidade, praticidade","curiosidade, flexibilidade, comunicação","emoção, cuidado, necessidade de segurança","expressão, confiança, criatividade","análise, praticidade, atenção aos detalhes","harmonia, diplomacia, equilíbrio","profundidade, intensidade, percepção","expansão, sentido, liberdade","metas, estrutura, responsabilidade","independência, originalidade, liberdade de pensamento","intuição, empatia, imaginação"],
- "tr":["girişim, doğrudanlık, bağımsızlık","istikrar, duyusallık, pratiklik","merak, esneklik, iletişim","duygu, bakım, güvenlik ihtiyacı","kendini ifade, özgüven, yaratıcılık","analiz, pratiklik, ayrıntılara dikkat","uyum, diplomasi, denge","derinlik, yoğunluk, sezgi","genişleme, anlam, özgürlük","hedefler, yapı, sorumluluk","bağımsızlık, özgünlük, özgür düşünce","sezgi, empati, hayal gücü"],
- "uk":["ініціатива, прямота, самостійність","стабільність, чуттєвість, практичність","допитливість, гнучкість, комунікація","емоційність, турбота, потреба в безпеці","самовираження, впевненість, творчість","аналіз, практичність, увага до деталей","гармонія, дипломатія, баланс","глибина, інтенсивність, проникливість","розширення горизонтів, сенс, свобода","цілі, структура, відповідальність","незалежність, оригінальність, свобода думки","інтуїція, емпатія, уява"]
-})
-
-HOUSE_MEANINGS.update({'de': ['Identität, Körper und Selbstausdruck', 'Geld, persönliche Ressourcen und Selbstwert', 'Denken, Lernen und Alltagkommunikation', 'Zuhause, Familie, Wurzeln und innere Sicherheit', 'Kreativität, Freude, Romantik und Selbstausdruck', 'Arbeit, Routinen, Gesundheit und Organisation', 'Partnerschaften, Beziehungen und Austausch', 'Intimität, gemeinsame Ressourcen und tiefe Veränderung', 'Überzeugungen, Lernen, Reisen und Sinn', 'Karriere, Status und öffentliche Leistung', 'Freunde, Gemeinschaften, Pläne und Zukunft', 'Rückzug, unbewusste Muster, Innenleben und Erholung'], 'es': ['identidad, cuerpo y expresión personal', 'dinero, recursos personales y autoestima', 'pensamiento, aprendizaje y comunicación cotidiana', 'hogar, familia, raíces y seguridad interior', 'creatividad, placer, romance y expresión', 'trabajo, rutinas, salud y organización', 'parejas, relaciones e interacción', 'intimidad, recursos compartidos y transformación', 'creencias, aprendizaje, viajes y sentido', 'carrera, estatus y realización pública', 'amigos, comunidades, planes y futuro', 'soledad, patrones inconscientes, vida interior y recuperación'], 'fr': ['identité, corps et expression personnelle', 'argent, ressources personnelles et estime de soi', 'pensée, apprentissage et communication quotidienne', 'foyer, famille, racines et sécurité intérieure', 'créativité, plaisir, romance et expression', 'travail, routines, santé et organisation', 'partenariats, relations et interaction', 'intimité, ressources partagées et transformation', 'croyances, apprentissage, voyages et sens', 'carrière, statut et réalisation publique', 'amis, communautés, projets et avenir', 'solitude, inconscient, vie intérieure et récupération'], 'it': ['identità, corpo ed espressione personale', 'denaro, risorse personali e autostima', 'pensiero, apprendimento e comunicazione quotidiana', 'casa, famiglia, radici e sicurezza interiore', 'creatività, piacere, romanticismo ed espressione', 'lavoro, routine, salute e organizzazione', 'partnership, relazioni e interazione', 'intimità, risorse condivise e trasformazione', 'credenze, apprendimento, viaggi e significato', 'carriera, status e realizzazione pubblica', 'amici, comunità, piani e futuro', 'solitudine, inconscio, vita interiore e recupero'], 'pt': ['identidade, corpo e expressão pessoal', 'dinheiro, recursos pessoais e autoestima', 'pensamento, aprendizagem e comunicação diária', 'casa, família, raízes e segurança interior', 'criatividade, prazer, romance e expressão', 'trabalho, rotinas, saúde e organização', 'parcerias, relacionamentos e interação', 'intimidade, recursos compartilhados e transformação', 'crenças, aprendizagem, viagens e sentido', 'carreira, status e realização pública', 'amigos, comunidades, planos e futuro', 'recolhimento, inconsciente, vida interior e recuperação'], 'tr': ['kimlik, beden ve kendini ifade', 'para, kişisel kaynaklar ve özdeğer', 'düşünme, öğrenme ve günlük iletişim', 'ev, aile, kökler ve iç güvenlik', 'yaratıcılık, keyif, romantizm ve ifade', 'iş, rutinler, sağlık ve düzen', 'ortaklıklar, ilişkiler ve birebir etkileşim', 'yakınlık, ortak kaynaklar ve derin dönüşüm', 'inançlar, öğrenme, seyahat ve anlam', 'kariyer, statü ve toplumsal başarı', 'arkadaşlar, topluluklar, planlar ve gelecek', 'yalnızlık, bilinçdışı, iç dünya ve iyileşme'], 'uk': ['особистість, тіло та самовираження', 'гроші, особисті ресурси та самоцінність', 'мислення, навчання та щоденне спілкування', 'дім, сім’я, корені та внутрішня опора', 'творчість, задоволення, романтика та самовираження', 'робота, звички, здоров’я та організація', 'партнерство, стосунки та взаємодія', 'близькість, спільні ресурси та глибокі зміни', 'світогляд, навчання, подорожі та сенс', 'кар’єра, статус і суспільна реалізація', 'друзі, спільноти, плани та майбутнє', 'усамітнення, несвідоме, внутрішній світ і відновлення']})
 
 # ============================================================
 # ASTRO LABELS
@@ -617,6 +620,20 @@ HOUSE_MEANINGS = {
         "friends, communities, plans and the future",
         "solitude, unconscious patterns, inner life and recovery",
     ],
+    "es": [
+        "identidad, cuerpo y autoexpresión",
+        "dinero, recursos personales y autoestima",
+        "pensamiento, aprendizaje y comunicación cotidiana",
+        "hogar, familia, raíces y seguridad interior",
+        "creatividad, placer, romance y autoexpresión",
+        "trabajo, rutinas, salud y organización",
+        "pareja, relaciones e interacción individual",
+        "intimidad, recursos compartidos y transformación profunda",
+        "creencias, aprendizaje, viajes y sentido",
+        "carrera, estatus y realización pública",
+        "amigos, comunidades, planes y futuro",
+        "soledad, patrones inconscientes, mundo interior y recuperación",
+    ],
 }
 
 
@@ -640,7 +657,8 @@ def format_deg_only(deg: float) -> str:
 def deg_to_sign(deg: float, lang: str = "ru") -> str:
     deg = normalize_deg(deg)
     sign_index = int(deg // 30)
-    zodiac = ZODIAC_RU if normalize_lang(lang) == "ru" else (ZODIAC_EN if normalize_lang(lang) == "en" else ZODIAC_LOCALIZED.get(normalize_lang(lang), ZODIAC_EN))
+    normalized = normalize_lang(lang)
+    zodiac = ZODIAC_RU if normalized == "ru" else ZODIAC_ES if normalized == "es" else ZODIAC_EN
     return f"{zodiac[sign_index]} {format_deg_only(deg)}"
 
 
@@ -982,7 +1000,13 @@ def format_aspects(
                 item["aspect"],
             )
             if normalize_lang(lang) == "ru"
-            else ASPECT_EN.get(
+            else {**ASPECT_EN, **({
+                "Conjunction": "conjunción",
+                "Sextile": "sextil",
+                "Square": "cuadratura",
+                "Trine": "trígono",
+                "Opposition": "oposición",
+            } if normalize_lang(lang) == "es" else {})}.get(
                 item["aspect"],
                 item["aspect"],
             )
@@ -1254,7 +1278,13 @@ def format_transits(
                 item["aspect"],
             )
             if normalize_lang(lang) == "ru"
-            else ASPECT_EN.get(
+            else {**ASPECT_EN, **({
+                "Conjunction": "conjunción",
+                "Sextile": "sextil",
+                "Square": "cuadratura",
+                "Trine": "trígono",
+                "Opposition": "oposición",
+            } if normalize_lang(lang) == "es" else {})}.get(
                 item["aspect"],
                 item["aspect"],
             )
@@ -1404,21 +1434,19 @@ def main_menu_keyboard(lang: str = "en") -> InlineKeyboardMarkup:
 
 def language_keyboard(current_lang: str = "en") -> InlineKeyboardMarkup:
     current_lang = normalize_lang(current_lang)
-    labels = {
-        "ru": "🇷🇺 Русский", "en": "🇬🇧 English", "de": "🇩🇪 Deutsch",
-        "es": "🇪🇸 Español", "fr": "🇫🇷 Français", "it": "🇮🇹 Italiano",
-        "pt": "🇵🇹 Português", "tr": "🇹🇷 Türkçe", "uk": "🇺🇦 Українська",
-    }
-    rows = []
-    langs = list(labels)
-    for i in range(0, len(langs), 2):
-        row = []
-        for code in langs[i:i+2]:
-            mark = " ✓" if code == current_lang else ""
-            row.append(InlineKeyboardButton(text=labels[code] + mark, callback_data=f"set_lang_{code}"))
-        rows.append(row)
-    rows.append([InlineKeyboardButton(text=t("btn_menu", current_lang), callback_data="menu")])
-    return InlineKeyboardMarkup(inline_keyboard=rows)
+    ru_label = "🇷🇺 Русский" + (" ✓" if current_lang == "ru" else "")
+    en_label = "🇬🇧 English" + (" ✓" if current_lang == "en" else "")
+    es_label = "🇪🇸 Español" + (" ✓" if current_lang == "es" else "")
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text=ru_label, callback_data="set_lang_ru"),
+                InlineKeyboardButton(text=en_label, callback_data="set_lang_en"),
+                InlineKeyboardButton(text=es_label, callback_data="set_lang_es"),
+            ],
+            [InlineKeyboardButton(text=t("btn_menu", current_lang), callback_data="menu")],
+        ]
+    )
 
 
 
@@ -1902,17 +1930,33 @@ async def call_gemini_safe(
     lang: str = "en",
     max_tokens: int = 2400,
 ) -> str:
+    """Generate a Gemini answer and continue it if Gemini stops at MAX_TOKENS."""
     lang = normalize_lang(lang)
-    lang_name = {
-        "ru":"Russian", "en":"English", "de":"German", "es":"Spanish",
-        "fr":"French", "it":"Italian", "pt":"Portuguese",
-        "tr":"Turkish", "uk":"Ukrainian",
-    }.get(lang, "English")
-    full_prompt = prompt + f"\n\nCRITICAL LANGUAGE RULE:\nRespond entirely in {lang_name}. Do not switch languages. Use complete sentences."
+    lang_name = {"ru": "Russian", "en": "English", "es": "Spanish"}.get(lang, "English")
+
+    full_prompt = prompt + f"""
+
+CRITICAL LANGUAGE RULE:
+Respond entirely and naturally in {lang_name}.
+Do not switch languages.
+Every sentence must be complete.
+"""
+
     models = []
     for model in MODELS_CHAIN:
         if model and model not in models:
             models.append(model)
+
+    def finish_reason_of(response) -> str:
+        try:
+            candidates = getattr(response, "candidates", None) or []
+            if candidates:
+                reason = getattr(candidates[0], "finish_reason", None)
+                return str(reason or "").upper()
+        except Exception:
+            pass
+        return ""
+
     for model_candidate in models:
         try:
             response = await asyncio.to_thread(
@@ -1921,60 +1965,67 @@ async def call_gemini_safe(
                 contents=full_prompt,
                 config=genai_types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
-                    max_output_tokens=max(max_tokens, 4000),
+                    max_output_tokens=max(max_tokens, 3200),
                 ),
             )
             text = (response.text or "").strip()
-            finish_reason = ""
-            try:
-                finish_reason = str(response.candidates[0].finish_reason).upper() if response.candidates else ""
-            except Exception:
-                pass
-            if text and "MAX_TOKENS" in finish_reason:
-                parts = [text]
-                for _ in range(2):
-                    continuation = await asyncio.to_thread(
-                        ai_client.models.generate_content,
-                        model=model_candidate,
-                        contents=(
-                            f"Continue the following {lang_name} response EXACTLY from where it stopped. "
-                            f"Do not restart, repeat or summarize. Finish incomplete thoughts and sections. "
-                            f"Output only the continuation.\n\n{text[-7000:]}"
-                        ),
-                        config=genai_types.GenerateContentConfig(
-                            system_instruction=SYSTEM_PROMPT,
-                            max_output_tokens=max(max_tokens, 4000),
-                        ),
-                    )
-                    extra = (continuation.text or "").strip()
-                    if not extra:
-                        break
-                    parts.append(extra)
-                    text += " " + extra
-                    try:
-                        fr = str(continuation.candidates[0].finish_reason).upper() if continuation.candidates else ""
-                    except Exception:
-                        fr = ""
-                    if "MAX_TOKENS" not in fr:
-                        break
-                text = "\n".join(parts).strip()
-            if text:
-                print(f"[Gemini OK] model={model_candidate} finish={finish_reason}", flush=True)
-                return text
+            reason = finish_reason_of(response)
+
+            if not text:
+                continue
+
+            # Gemini may legally stop at MAX_TOKENS. Continue from the last part
+            # instead of returning a visibly unfinished answer to Telegram.
+            continuation_count = 0
+            while "MAX_TOKENS" in reason and continuation_count < 2:
+                continuation_count += 1
+                tail = text[-7000:]
+                continuation_prompt = f"""
+Continue the response below EXACTLY from where it stopped.
+Do not restart it.
+Do not repeat any sentence from the previous text.
+Do not add an introduction.
+Finish the current thought and all remaining requested sections naturally.
+Respond entirely in {lang_name}.
+Output only the continuation.
+
+Previous response ending:
+{tail}
+"""
+                cont = await asyncio.to_thread(
+                    ai_client.models.generate_content,
+                    model=model_candidate,
+                    contents=continuation_prompt,
+                    config=genai_types.GenerateContentConfig(
+                        system_instruction=SYSTEM_PROMPT,
+                        max_output_tokens=max(max_tokens, 3200),
+                    ),
+                )
+                cont_text = (cont.text or "").strip()
+                if not cont_text:
+                    break
+                text = (text + "\n" + cont_text).strip()
+                reason = finish_reason_of(cont)
+
+            print(
+                f"[Gemini OK] model={model_candidate} finish={reason} continuations={continuation_count}",
+                flush=True,
+            )
+            return text
+
         except Exception as e:
-            print(f"[Gemini Failover] model={model_candidate} error={e}", flush=True)
-    fallbacks = {
-        "ru":"Не удалось получить AI-разбор прямо сейчас. Попробуйте ещё раз через несколько секунд.",
-        "en":"The AI interpretation is temporarily unavailable. Please try again in a few seconds.",
-        "de":"Die KI-Interpretation ist momentan nicht verfügbar. Bitte versuche es in einigen Sekunden erneut.",
-        "es":"La interpretación de IA no está disponible ahora. Inténtalo de nuevo en unos segundos.",
-        "fr":"L’interprétation IA est temporairement indisponible. Réessayez dans quelques secondes.",
-        "it":"L’interpretazione IA non è temporaneamente disponibile. Riprova tra qualche secondo.",
-        "pt":"A interpretação de IA está temporariamente indisponível. Tente novamente em alguns segundos.",
-        "tr":"Yapay zekâ yorumu şu anda kullanılamıyor. Lütfen birkaç saniye sonra tekrar deneyin.",
-        "uk":"Інтерпретація ШІ зараз недоступна. Спробуйте ще раз за кілька секунд.",
-    }
-    return fallbacks.get(lang, fallbacks["en"])
+            print(
+                f"[Gemini Failover] model={model_candidate} error={e}",
+                flush=True,
+            )
+            continue
+
+    return {
+        "ru": "Не удалось получить AI-разбор прямо сейчас. Попробуйте ещё раз через несколько секунд.",
+        "es": "La interpretación de IA no está disponible en este momento. Inténtalo de nuevo en unos segundos.",
+        "en": "The AI interpretation is temporarily unavailable. Please try again in a few seconds.",
+    }.get(lang, "The AI interpretation is temporarily unavailable. Please try again in a few seconds.")
+
 
 # ============================================================
 # AI — NATAL
@@ -2766,14 +2817,18 @@ async def cb_language(cb: types.CallbackQuery):
     )
 
 
-@dp.callback_query(F.data.regexp(r"^set_lang_(ru|en|de|es|fr|it|pt|tr|uk)$"))
+@dp.callback_query(F.data.in_({"set_lang_ru", "set_lang_en", "set_lang_es"}))
 async def cb_set_language(cb: types.CallbackQuery):
     user = await get_user(cb.from_user.id)
     if not user:
         await cb.answer("Please /start first.", show_alert=True)
         return
 
-    new_lang = cb.data.removeprefix("set_lang_")
+    new_lang = {
+        "set_lang_ru": "ru",
+        "set_lang_en": "en",
+        "set_lang_es": "es",
+    }.get(cb.data, "en")
     await update_user_language(cb.from_user.id, new_lang)
     await cb.answer(t("language_saved", new_lang))
 
@@ -3311,6 +3366,7 @@ async def cb_topics(
         "topic_relationships": {
             "title_ru": "❤️ ОТНОШЕНИЯ И БЛИЗОСТЬ",
             "title_en": "❤️ RELATIONSHIPS & INTIMACY",
+            "title_es": "❤️ RELACIONES E INTIMIDAD",
             "focus": (
                 "Venus, Moon, Mars, 5th/7th/8th house themes, "
                 "natal aspects involving Venus/Moon/Mars, "
@@ -3321,6 +3377,7 @@ async def cb_topics(
         "topic_career": {
             "title_ru": "💼 КАРЬЕРА И ПРИЗВАНИЕ",
             "title_en": "💼 CAREER & VOCATION",
+            "title_es": "💼 CARRERA Y VOCACIÓN",
             "focus": (
                 "MC, 10th house, Saturn, Mars, Sun, 2nd/6th/10th "
                 "house themes, ambition, leadership, discipline, "
@@ -3330,6 +3387,7 @@ async def cb_topics(
         "topic_money": {
             "title_ru": "💰 ФИНАНСЫ И РЕСУРСЫ",
             "title_en": "💰 MONEY & RESOURCES",
+            "title_es": "💰 DINERO Y RECURSOS",
             "focus": (
                 "2nd and 8th houses, Jupiter, Venus, Saturn, "
                 "resource management, spending patterns, risk "
@@ -3438,10 +3496,9 @@ Do not use generic horoscope clichés.
         status_message
     )
 
-    title = (
-        info["title_ru"]
-        if lang == "ru"
-        else info["title_en"]
+    title = info.get(
+        f"title_{lang}",
+        info["title_en"],
     )
 
     full_text = (
@@ -3917,4 +3974,4 @@ if __name__ == "__main__":
         print(
             "Bot safely shutdown.",
             flush=True,
-        )
+    )
