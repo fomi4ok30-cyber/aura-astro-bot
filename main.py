@@ -1829,7 +1829,7 @@ async def was_forecast_sent(
 
 async def ai_request_allowed(
     user_id: int,
-    limit: int = 15,
+    limit: int = 7,
 ) -> bool:
     user = await get_user(user_id)
 
