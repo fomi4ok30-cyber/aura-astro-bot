@@ -30,7 +30,7 @@ from google.genai import types as genai_types
 
 
 # ============================================================
-# AURA ASTRO v8.0
+# AURA ASTRO v9.0
 # ============================================================
 # Улучшения:
 # - дома планет
@@ -79,6 +79,7 @@ MODELS_CHAIN = [
     "gemini-3.8-flash",
     "gemini-3.7-flash",
     "gemini-3.6-flash",
+    "gemini-3.5-flash",
     "gemini-3.1-pro-preview",
 ]
 
@@ -94,7 +95,7 @@ dp = Dispatcher(
 )
 
 geolocator = Nominatim(
-    user_agent="aura_astro_engine_prod_v8",
+    user_agent="aura_astro_engine_prod_v9",
     timeout=7,
 )
 
@@ -106,6 +107,7 @@ ai_client = genai.Client(
 
 UTC = timezone.utc
 db_pool: Optional[asyncpg.Pool] = None
+AI_DAILY_LIMIT = 15
 
 
 # ============================================================
@@ -178,10 +180,10 @@ TEXTS = {'ru': {'welcome_back': '✨ С возвращением, {name}!\n\nС�
         'analyzing': '🧠 Анализирую вашу карту...',
         'subscription_title': '⭐ AURA ASTRO — ПОДПИСКА',
         'subscription_choose': 'Выберите план доступа:',
-        'plan_1m_btn': '⭐ 1 месяц — 199 Stars',
-        'plan_3m_btn': '✨ 3 месяца — 450 Stars',
-        'plan_6m_btn': '⚡ 6 месяцев — 800 Stars',
-        'plan_1y_btn': '👑 1 год — 1200 Stars',
+        'plan_1m_btn': '⭐ 1 месяц — 259 Stars',
+        'plan_3m_btn': '✨ 3 месяца — 585 Stars',
+        'plan_6m_btn': '⚡ 6 месяцев — 1040 Stars',
+        'plan_1y_btn': '👑 1 год — 1560 Stars',
         'payment_success': '🎉 Доступ активирован на {days} дней!',
         'payment_already_processed': '✅ Этот платёж уже был обработан.',
         'chart_title': '🌌 ВАША НАТАЛЬНАЯ КАРТА',
@@ -290,10 +292,10 @@ TEXTS = {'ru': {'welcome_back': '✨ С возвращением, {name}!\n\nС�
         'analyzing': '🧠 Analyzing your chart...',
         'subscription_title': '⭐ AURA ASTRO — MEMBERSHIP',
         'subscription_choose': 'Choose your access plan:',
-        'plan_1m_btn': '⭐ 1 Month — 199 Stars',
-        'plan_3m_btn': '✨ 3 Months — 450 Stars',
-        'plan_6m_btn': '⚡ 6 Months — 800 Stars',
-        'plan_1y_btn': '👑 1 Year — 1200 Stars',
+        'plan_1m_btn': '⭐ 1 Month — 259 Stars',
+        'plan_3m_btn': '✨ 3 Months — 585 Stars',
+        'plan_6m_btn': '⚡ 6 Months — 1040 Stars',
+        'plan_1y_btn': '👑 1 Year — 1560 Stars',
         'payment_success': '🎉 Access activated for {days} days!',
         'payment_already_processed': '✅ This payment has already been processed.',
         'chart_title': '🌌 YOUR NATAL CHART',
@@ -339,27 +341,27 @@ TEXTS = {'ru': {'welcome_back': '✨ С возвращением, {name}!\n\nС�
         'aspect_hint': 'an aspect describes the interaction between two planets',
         'retro_hint': 'in traditional astrology, retrograde motion is associated with more '
                       'internal processing of a theme'},
- 'es': {'welcome_back': '✨ ¡Bienvenido de nuevo, {name}!\\n\\nEstado: {status}\\n\\n¿Qué te '
+ 'es': {'welcome_back': '✨ ¡Bienvenido de nuevo, {name}!\n\nEstado: {status}\n\n¿Qué te '
                         'gustaría explorar?',
-        'start_intro': '✨ Bienvenido a Aura Astro.\\n\\nTu guía astrológica personal combina '
+        'start_intro': '✨ Bienvenido a Aura Astro.\n\nTu guía astrológica personal combina '
                        'cálculos precisos de Swiss Ephemeris con una interpretación '
-                       'psicológica.\\n\\nVamos a construir tu carta natal.\\n\\n¿Cómo te gustaría '
+                       'psicológica.\n\nVamos a construir tu carta natal.\n\n¿Cómo te gustaría '
                        'que te llamemos?',
-        'ask_birth_date': '¿Cuál es tu fecha de nacimiento?\\n\\nUsa el formato '
-                          '`AAAA-MM-DD`.\\nEjemplo: `1994-08-23`',
-        'invalid_date': '⚠️ Fecha no válida.\\n\\nUsa el formato `AAAA-MM-DD`.',
-        'ask_birth_time': '¿A qué hora naciste?\\n\\nUsa el formato de 24 horas '
-                          '`HH:MM`.\\nEjemplo: `14:30`.\\n\\nSi no la conoces, escribe `12:00`.',
-        'invalid_time': '⚠️ Hora no válida.\\n\\nUsa el formato `HH:MM`.',
-        'ask_city': '¿Dónde naciste?\\n\\nIndica ciudad y país.\\nEjemplo: `Madrid, España`.',
+        'ask_birth_date': '¿Cuál es tu fecha de nacimiento?\n\nUsa el formato '
+                          '`AAAA-MM-DD`.\nEjemplo: `1994-08-23`',
+        'invalid_date': '⚠️ Fecha no válida.\n\nUsa el formato `AAAA-MM-DD`.',
+        'ask_birth_time': '¿A qué hora naciste?\n\nUsa el formato de 24 horas '
+                          '`HH:MM`.\nEjemplo: `14:30`.\n\nSi no la conoces, escribe `12:00`.',
+        'invalid_time': '⚠️ Hora no válida.\n\nUsa el formato `HH:MM`.',
+        'ask_city': '¿Dónde naciste?\n\nIndica ciudad y país.\nEjemplo: `Madrid, España`.',
         'calc_coords': '🔭 Calculando las coordenadas y la carta natal...',
-        'city_not_found': '⚠️ No se encontró la ubicación.\\n\\nInténtalo de nuevo como `Ciudad, '
+        'city_not_found': '⚠️ No se encontró la ubicación.\n\nInténtalo de nuevo como `Ciudad, '
                           'País`.',
-        'tz_error': '⚠️ No se pudo determinar la zona horaria histórica.\\n\\nPrueba con una '
+        'tz_error': '⚠️ No se pudo determinar la zona horaria histórica.\n\nPrueba con una '
                     'ciudad grande cercana.',
-        'calc_error': '⚠️ Ocurrió un error al calcular la carta.\\n\\nInténtalo de nuevo.',
-        'trial_activated': '━━━━━━━━━━━━━━━━━━━━\\n🎁 Acceso completo activado durante 7 '
-                           'días.\\n\\nTu pronóstico diario llegará a las 20:00, hora local.',
+        'calc_error': '⚠️ Ocurrió un error al calcular la carta.\n\nInténtalo de nuevo.',
+        'trial_activated': '━━━━━━━━━━━━━━━━━━━━\n🎁 Acceso completo activado durante 7 '
+                           'días.\n\nTu pronóstico diario llegará a las 20:00, hora local.',
         'btn_chart': '🌌 Mi carta',
         'btn_forecast': '🔮 Pronóstico de hoy',
         'btn_tomorrow': '🌙 Mañana',
@@ -377,20 +379,20 @@ TEXTS = {'ru': {'welcome_back': '✨ С возвращением, {name}!\n\nС�
         'status_prem': 'Premium',
         'status_exp': 'Caducado',
         'days_left': 'quedan {days} días',
-        'limit_reached': 'Has alcanzado el límite diario de consultas a la guía AI.\\n\\nVuelve '
+        'limit_reached': 'Has alcanzado el límite diario de consultas a la guía AI.\n\nVuelve '
                          'mañana.',
-        'paywall_msg': '🔒 Tu acceso gratuito ha terminado.\\n\\nElige una suscripción para seguir '
+        'paywall_msg': '🔒 Tu acceso gratuito ha terminado.\n\nElige una suscripción para seguir '
                        'recibiendo pronósticos y haciendo preguntas a tu carta.',
-        'ask_prompt': '💬 PREGUNTAR A MI CARTA\\n\\nHaz una pregunta sobre ti, tus relaciones, el '
-                      'trabajo o una decisión importante.\\n\\nEjemplo:\\n«¿Por qué me cuesta '
+        'ask_prompt': '💬 PREGUNTAR A MI CARTA\n\nHaz una pregunta sobre ti, tus relaciones, el '
+                      'trabajo o una decisión importante.\n\nEjemplo:\n«¿Por qué me cuesta '
                       'confiar en las personas?»',
         'analyzing': '🧠 Analizando tu carta...',
         'subscription_title': '⭐ AURA ASTRO — SUSCRIPCIÓN',
         'subscription_choose': 'Elige tu plan de acceso:',
-        'plan_1m_btn': '⭐ 1 mes — 199 Stars',
-        'plan_3m_btn': '✨ 3 meses — 450 Stars',
-        'plan_6m_btn': '⚡ 6 meses — 800 Stars',
-        'plan_1y_btn': '👑 1 año — 1200 Stars',
+        'plan_1m_btn': '⭐ 1 mes — 259 Stars',
+        'plan_3m_btn': '✨ 3 meses — 585 Stars',
+        'plan_6m_btn': '⚡ 6 meses — 1040 Stars',
+        'plan_1y_btn': '👑 1 año — 1560 Stars',
         'payment_success': '🎉 Acceso activado durante {days} días!',
         'payment_already_processed': '✅ Este pago ya ha sido procesado.',
         'chart_title': '🌌 TU CARTA NATAL',
@@ -1127,8 +1129,10 @@ def serialize_chart_for_ai(
         lines.append(
             f"- {key}: "
             f"{data.get('sign')} | "
-            f"house {data.get('house')} | "
+            f"exact degree {data.get('degree')} | "
+            f"house {data.get('house')} ({data.get('house_meaning')}) | "
             f"{retro} | "
+            f"planet meaning: {t(f'meaning_{key.lower()}', lang)} | "
             f"sign traits: {data.get('sign_trait')}"
         )
 
@@ -1294,7 +1298,7 @@ def format_transits(
             f"- {tplanet} {aspect} "
             f"{nplanet} "
             f"(orb {item['orb']}°, "
-            f"{item['motion']})"
+            f"{t(item['motion'], lang)})"
         )
 
     return "\n".join(lines)
@@ -1328,25 +1332,25 @@ PRICING_PLANS = {
     "plan_1m": {
         "title": "🌟 1 Month Access",
         "description": "30 days of forecasts & Ask My Chart.",
-        "stars": 199,
+        "stars": 259,
         "days": 30,
     },
     "plan_3m": {
         "title": "✨ 3 Months Access",
         "description": "90 days of complete astro guidance.",
-        "stars": 450,
+        "stars": 585,
         "days": 90,
     },
     "plan_6m": {
         "title": "⚡ 6 Months Access",
         "description": "180 days of forecasts & transit tracking.",
-        "stars": 800,
+        "stars": 1040,
         "days": 180,
     },
     "plan_1y": {
         "title": "👑 1 Year Access",
         "description": "365 days of complete astrology coaching.",
-        "stars": 1200,
+        "stars": 1560,
         "days": 365,
     },
 }
@@ -1829,7 +1833,7 @@ async def was_forecast_sent(
 
 async def ai_request_allowed(
     user_id: int,
-    limit: int = 7,
+    limit: int = AI_DAILY_LIMIT,
 ) -> bool:
     user = await get_user(user_id)
 
@@ -1922,6 +1926,9 @@ RULES:
     between the two planets rather than merely naming it.
 21. When a house is supplied, connect it to the life area
     without claiming certainty about events.
+22. Treat exact degrees as refinements of the placement; never
+    invent degree-specific claims that are not supported by the data.
+23. Use house meanings as context, not as deterministic predictions.
 """
 
 
@@ -1966,6 +1973,9 @@ Every sentence must be complete.
                 config=genai_types.GenerateContentConfig(
                     system_instruction=SYSTEM_PROMPT,
                     max_output_tokens=max(max_tokens, 3200),
+                    thinking_config=genai_types.ThinkingConfig(
+                        thinking_level="medium"
+                    ),
                 ),
             )
             text = (response.text or "").strip()
@@ -1999,6 +2009,9 @@ Previous response ending:
                     config=genai_types.GenerateContentConfig(
                         system_instruction=SYSTEM_PROMPT,
                         max_output_tokens=max(max_tokens, 3200),
+                        thinking_config=genai_types.ThinkingConfig(
+                            thinking_level="medium"
+                        ),
                     ),
                 )
                 cont_text = (cont.text or "").strip()
@@ -2030,6 +2043,70 @@ Previous response ending:
 # ============================================================
 # AI — NATAL
 # ============================================================
+
+PROMPT_LABELS = {
+    "ru": {
+        "architecture": "🧠 АРХИТЕКТУРА ЛИЧНОСТИ",
+        "outer": "🌅 ВНЕШНЕЕ ПРОЯВЛЕНИЕ",
+        "mind": "⚡ МЫШЛЕНИЕ И ДЕЙСТВИЯ",
+        "relationships": "❤️ ОТНОШЕНИЯ",
+        "realization": "💼 РЕАЛИЗАЦИЯ",
+        "dynamic": "🔺 ВНУТРЕННЯЯ ДИНАМИКА",
+        "strength": "💎 ГЛАВНАЯ СИЛА",
+        "conclusion": "🎯 ГЛАВНЫЙ ВЫВОД",
+        "theme": "🔮 ТЕМА ДНЯ",
+        "background": "🧠 ПСИХОЛОГИЧЕСКИЙ ФОН",
+        "daily_work": "💼 ДЕЛА И РЕАЛИЗАЦИЯ",
+        "actions": "⚡ ТАКТИЧЕСКИЕ ДЕЙСТВИЯ",
+        "question": "🎯 ВОПРОС ДЛЯ СЕБЯ",
+        "core": "1. ОСНОВНОЙ ПАТТЕРН",
+        "key": "2. КЛЮЧЕВАЯ СИЛА",
+        "momentum": "3. ТЕКУЩАЯ ДИНАМИКА",
+        "tactics": "4. ТАКТИЧЕСКИЕ РЕКОМЕНДАЦИИ",
+    },
+    "en": {
+        "architecture": "🧠 PERSONALITY ARCHITECTURE",
+        "outer": "🌅 OUTER EXPRESSION",
+        "mind": "⚡ THINKING & ACTION",
+        "relationships": "❤️ RELATIONSHIPS",
+        "realization": "💼 REALIZATION",
+        "dynamic": "🔺 INNER DYNAMICS",
+        "strength": "💎 CORE STRENGTH",
+        "conclusion": "🎯 KEY TAKEAWAY",
+        "theme": "🔮 THEME OF THE DAY",
+        "background": "🧠 PSYCHOLOGICAL BACKGROUND",
+        "daily_work": "💼 WORK & REALIZATION",
+        "actions": "⚡ TACTICAL ACTIONS",
+        "question": "🎯 QUESTION FOR YOURSELF",
+        "core": "1. CORE PATTERN",
+        "key": "2. KEY STRENGTH",
+        "momentum": "3. CURRENT MOMENTUM",
+        "tactics": "4. TACTICAL RECOMMENDATIONS",
+    },
+    "es": {
+        "architecture": "🧠 ARQUITECTURA DE LA PERSONALIDAD",
+        "outer": "🌅 EXPRESIÓN EXTERNA",
+        "mind": "⚡ PENSAMIENTO Y ACCIÓN",
+        "relationships": "❤️ RELACIONES",
+        "realization": "💼 REALIZACIÓN",
+        "dynamic": "🔺 DINÁMICA INTERNA",
+        "strength": "💎 FORTALEZA PRINCIPAL",
+        "conclusion": "🎯 CONCLUSIÓN CLAVE",
+        "theme": "🔮 TEMA DEL DÍA",
+        "background": "🧠 FONDO PSICOLÓGICO",
+        "daily_work": "💼 TRABAJO Y REALIZACIÓN",
+        "actions": "⚡ ACCIONES TÁCTICAS",
+        "question": "🎯 PREGUNTA PARA TI",
+        "core": "1. PATRÓN PRINCIPAL",
+        "key": "2. FORTALEZA CLAVE",
+        "momentum": "3. DINÁMICA ACTUAL",
+        "tactics": "4. RECOMENDACIONES TÁCTICAS",
+    },
+}
+
+def plabel(lang: str, key: str) -> str:
+    return PROMPT_LABELS[normalize_lang(lang)][key]
+
 
 async def generate_blueprint_text(
     name: str,
@@ -2065,46 +2142,46 @@ Length: approximately 500–650 words.
 
 Structure exactly:
 
-🧠 АРХИТЕКТУРА ЛИЧНОСТИ
+{plabel(lang, "architecture")}
 
 Explain Sun + Moon together.
 Describe identity, emotional needs, inner tension
 and psychological resources.
 
-🌅 ВНЕШНЕЕ ПРОЯВЛЕНИЕ
+{plabel(lang, "outer")}
 
 Use Ascendant + Sun + relevant 1st-house information.
 Explain first impression and outer behavior.
 
-⚡ МЫШЛЕНИЕ И ДЕЙСТВИЯ
+{plabel(lang, "mind")}
 
 Use Mercury + Mars and relevant houses/aspects.
 Explain thinking, communication, motivation,
 decision-making and conflict style.
 
-❤️ ОТНОШЕНИЯ
+{plabel(lang, "relationships")}
 
 Use Venus + Moon + Mars plus relevant houses/aspects.
 Explain attraction, intimacy, boundaries and needs.
 
-💼 РЕАЛИЗАЦИЯ
+{plabel(lang, "realization")}
 
 Use MC, 10th-house information, Sun, Saturn, Mars
 and relevant aspects.
 Explain work identity and natural strategic strengths.
 
-🔺 ВНУТРЕННЯЯ ДИНАМИКА
+{plabel(lang, "dynamic")}
 
 Choose the 2 most psychologically meaningful natal
 aspects supplied and explain the tension or resource
 they create.
 
-💎 ГЛАВНАЯ СИЛА
+{plabel(lang, "strength")}
 
 Identify one distinctive strength emerging from
 multiple chart factors.
 
-🎯 ГЛАВНЫЙ ВЫВОД
+{plabel(lang, "conclusion")}
 
 Give a concise personal conclusion.
 
@@ -2158,28 +2235,28 @@ Length: approximately 280–350 words.
 
 Structure:
 
-🔮 ТЕМА ДНЯ
+{plabel(lang, "theme")}
 
 A concise meaningful theme based on actual transits.
 
-🧠 ПСИХОЛОГИЧЕСКИЙ ФОН
+{plabel(lang, "background")}
 
 Explain how the strongest transit may symbolically
 highlight a natal pattern.
 
-❤️ ОТНОШЕНИЯ
+{plabel(lang, "relationships")}
 
 Explain the most relevant emotional or relational theme.
 
-💼 ДЕЛА И РЕАЛИЗАЦИЯ
+{plabel(lang, "daily_work")}
 
 Explain the most useful approach to work and decisions.
 
-⚡ ТАКТИЧЕСКИЕ ДЕЙСТВИЯ
+{plabel(lang, "actions")}
 
 Exactly two practical bullet points.
 
-🎯 ВОПРОС ДЛЯ СЕБЯ
+{plabel(lang, "question")}
 
 One thoughtful question.
 
@@ -2920,6 +2997,13 @@ async def cb_chart(
         )
     )
 
+    if not await ai_request_allowed(cb.from_user.id):
+        await cb.message.answer(
+            t("limit_reached", lang),
+            reply_markup=main_menu_keyboard(lang),
+        )
+        return
+
     status_message = await cb.message.answer(
         t(
             "analyzing",
@@ -3400,6 +3484,13 @@ async def cb_topics(
         cb.data
     ]
 
+    if not await ai_request_allowed(cb.from_user.id):
+        await cb.message.answer(
+            t("limit_reached", lang),
+            reply_markup=main_menu_keyboard(lang),
+        )
+        return
+
     status_message = await cb.message.answer(
         t(
             "analyzing",
@@ -3449,18 +3540,18 @@ Length: approximately 300–380 words.
 
 Structure exactly:
 
-1. CORE PATTERN
+{plabel(lang, "core")}
 Explain the person's natural pattern in this area
 using several actual chart factors.
 
-2. KEY STRENGTH
+{plabel(lang, "key")}
 Identify the strongest useful resource.
 
-3. CURRENT MOMENTUM
+{plabel(lang, "momentum")}
 Explain which supplied transits symbolically
 highlight the theme.
 
-4. TACTICAL RECOMMENDATIONS
+{plabel(lang, "tactics")}
 Give exactly two practical recommendations.
 
 Do not invent houses, aspects or transits.
@@ -3881,7 +3972,7 @@ async def send_daily_cycle():
 
 async def health_check(request):
     return web.Response(
-        text="Aura Astro v6.0 Online",
+        text="Aura Astro v9.0 Online",
         status=200,
     )
 
@@ -3944,7 +4035,7 @@ async def main():
     )
 
     print(
-        "🚀 Aura Astro v5.0 is running.",
+        "🚀 Aura Astro v9.0 is running.",
         flush=True,
     )
 
