@@ -123,6 +123,7 @@ TEXTS = {'ru': {'welcome_back': '✨ С возвращением, {name}!\n\nС�
                        'Давайте построим вашу натальную карту.\n'
                        '\n'
                        'Как к вам обращаться?',
+        'registration_note': 'Для расчёта натальной карты нужны дата, время и место рождения. Эти данные используются для формирования вашей персональной интерпретации.',
         'ask_birth_date': 'Укажите дату рождения в формате `ГГГГ-ММ-ДД`.\n\nНапример: `1994-08-23`',
         'invalid_date': '⚠️ Неверный формат даты.\n'
                         '\n'
@@ -344,7 +345,7 @@ TEXTS = {'ru': {'welcome_back': '✨ С возвращением, {name}!\n\nС�
  'es': {'welcome_back': '✨ ¡Bienvenido de nuevo, {name}!\n\nEstado: {status}\n\n¿Qué te '
                         'gustaría explorar?',
         'start_intro': '✨ Bienvenido a Aura Astro.\n\nTu guía astrológica personal combina '
-                       'cálculos precisos de Swiss Ephemeris con una interpretación '
+                       'cálculos de Swiss Ephemeris con una interpretación '
                        'psicológica.\n\nVamos a construir tu carta natal.\n\n¿Cómo te gustaría '
                        'que te llamemos?',
         'ask_birth_date': '¿Cuál es tu fecha de nacimiento?\n\nUsa el formato '
@@ -2487,8 +2488,18 @@ async def cmd_start(
 
     await state.clear()
 
-    lang = normalize_lang(
-        message.from_user.language_code
+    # Honor explicit Telegram deep-link language parameters used by ads.
+    # Example: t.me/AuraAstroTransit_bot?start=es
+    start_payload = ""
+    if message.text:
+        parts = message.text.split(maxsplit=1)
+        if len(parts) > 1:
+            start_payload = parts[1].strip().lower()
+
+    lang = (
+        start_payload
+        if start_payload in {"ru", "en", "es"}
+        else normalize_lang(message.from_user.language_code)
     )
 
     user = await get_user(
@@ -2496,12 +2507,19 @@ async def cmd_start(
     )
 
     if user:
-        user_lang = normalize_lang(
-            user.get(
-                "language_code",
+        if start_payload in {"ru", "en", "es"}:
+            await update_user_language(
+                message.from_user.id,
                 lang,
             )
-        )
+            user_lang = lang
+        else:
+            user_lang = normalize_lang(
+                user.get(
+                    "language_code",
+                    lang,
+                )
+            )
 
         access = await get_user_access(
             message.from_user.id
@@ -2570,6 +2588,11 @@ async def process_name(
     await state.update_data(
         name=name
     )
+
+    if lang == "es":
+        await message.answer(
+            t("registration_note", lang)
+        )
 
     await message.answer(
         t(
@@ -4065,4 +4088,4 @@ if __name__ == "__main__":
         print(
             "Bot safely shutdown.",
             flush=True,
-    )
+)
